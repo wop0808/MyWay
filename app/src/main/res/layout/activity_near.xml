@@ -1,0 +1,119 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#ffffff">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="83"
+        android:background="@mipmap/neer_frame_pic">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical" >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="16" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="11"
+                android:orientation="horizontal" >
+                <LinearLayout
+                    android:id="@+id/id_main_near_ll_back"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="90"
+                    android:gravity="center">
+                    <TextView
+                        android:id="@+id/id_main_near_tv_back"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@mipmap/near_pic_comeback"/>
+                </LinearLayout>
+                <LinearLayout 
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="13"
+                    android:background="@mipmap/near_edit_pic">
+                    <LinearLayout 
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="76"
+                        android:gravity="center">
+                        <ImageView
+                            android:id="@+id/id_main_near_search"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@mipmap/near_fangdajing_pic"/>
+                    </LinearLayout>
+                    <LinearLayout 
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="11"
+                        android:gravity="center_vertical">
+                        <AutoCompleteTextView
+                            android:id="@+id/id_near_autoCompleteTextView"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:hint="在附近搜索"
+                            android:textColorHint="@color/word_gray"
+                            android:textSize="@dimen/list_word"
+                            android:background="@null"
+                            android:textCursorDrawable="@null"/>
+                    </LinearLayout>
+                </LinearLayout>
+                <LinearLayout 
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="97">
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="7" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <ListView
+        android:id="@+id/id_nearlayout_lv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="25" >
+    </ListView>
+
+    <!--<LinearLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_weight="92"-->
+        <!--android:orientation="horizontal" >-->
+
+        <!--<TextView-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:layout_weight="1"-->
+            <!--android:background="@mipmap/near_nearpic" />-->
+
+        <!--<TextView-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:layout_weight="1"-->
+            <!--android:background="@mipmap/near_waypic" />-->
+
+        <!--<TextView-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:layout_weight="1"-->
+            <!--android:background="@mipmap/near_mypic" />-->
+    <!--</LinearLayout>-->
+
+</LinearLayout>

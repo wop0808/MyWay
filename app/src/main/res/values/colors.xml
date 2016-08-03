@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <!-- 按压蓝 -->
+    <color name="press_blue">#0355a0</color>
+
+    <color name="word">#4990e2</color>
+    <color name="word_gray">#6c6e6f</color>
+    <color name="content_blue">#117bdc</color>
+    <!-- 分割灰 -->
+    <color name="app_depart_gray">#c9c9c9</color>
+    <!-- 顶端浅蓝 -->
+    <color name="top_blue_light">#117bdc</color>
+    <!-- 文字黑 -->
+    <color name="word_black">#000000</color>
+    <!-- 文字蓝灰 -->
+    <color name="word_blue_gray">#94bee4</color>
+</resources>

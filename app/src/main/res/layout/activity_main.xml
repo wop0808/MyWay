@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/id_main_bottom_linearlayout">
+
+        <com.baidu.mapapi.map.MapView
+            android:id="@+id/id_main_mapview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clickable="true"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:id="@+id/id_main_serchcolum"
+                android:layout_width="match_parent"
+                android:layout_height="41dp"
+                android:layout_marginLeft="@dimen/main_margin_left_right"
+                android:layout_marginRight="@dimen/main_margin_left_right"
+                android:layout_marginTop="8dp"
+                android:background="@mipmap/main_search_colum_pic">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="600"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@mipmap/main_fangdajin_pic" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="160">
+
+                    <TextView
+                        android:id="@+id/id_main_search_colum"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:text="拍照记录，不再遗忘"
+                        android:textColor="@color/word_gray" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="600"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@mipmap/main_huatong_pic" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/id_main_changemap"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_below="@id/id_main_serchcolum"
+                android:layout_marginRight="@dimen/main_margin_left_right"
+                android:layout_marginTop="@dimen/main_margin_top"
+                android:src="@mipmap/main_changemap_pic" />
+
+            <TextView
+                android:id="@+id/id_main_lukuang"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_below="@id/id_main_changemap"
+                android:layout_marginRight="@dimen/main_margin_left_right"
+                android:layout_marginTop="@dimen/main_margin_top"
+                android:background="@drawable/main_lukuang"
+                android:textIsSelectable="true" />
+
+            <ImageView
+                android:id="@+id/id_main_logo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignLeft="@id/id_main_serchcolum"
+                android:layout_below="@id/id_main_serchcolum"
+                android:layout_marginTop="@dimen/main_margin_top"
+                android:src="@mipmap/main_logo_pic" />
+
+            <ImageView
+                android:id="@+id/id_main_main_find"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="20dp"
+                android:layout_marginLeft="@dimen/main_margin_left_right"
+                android:src="@mipmap/main_faxian_pic" />
+        </RelativeLayout>
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/id_main_fragment"
+        android:layout_width="match_parent"
+        android:layout_above="@+id/id_main_bottom_linearlayout"
+        android:layout_height="match_parent"/>
+
+    <LinearLayout
+        android:id="@+id/id_main_bottom_linearlayout"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:background="#ffffff"
+        android:gravity="center">
+
+        <ImageView
+            android:id="@+id/id_main_tv_near"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/main_tv_near" />
+
+        <ImageView
+            android:id="@+id/id_main_tv_way"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/main_tv_way" />
+
+        <ImageView
+            android:id="@+id/id_main_tv_my"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/main_tv_my" />
+
+    </LinearLayout>
+</RelativeLayout>
