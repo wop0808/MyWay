@@ -2,7 +2,6 @@ package com.hkc.mymapy;
 
 
 import android.content.Intent;
-import android.location.Location;
 
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
@@ -10,11 +9,8 @@ import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
@@ -23,29 +19,18 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
-import com.baidu.mapapi.map.CircleOptions;
 import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
-import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationData;
-import com.baidu.mapapi.map.OverlayOptions;
-import com.baidu.mapapi.map.Stroke;
 import com.baidu.mapapi.model.LatLng;
-import com.baidu.mapapi.model.inner.GeoPoint;
 import com.baidu.mapapi.search.core.CityInfo;
 import com.baidu.mapapi.search.core.PoiInfo;
 import com.baidu.mapapi.search.core.SearchResult;
-import com.baidu.mapapi.search.geocode.GeoCodeResult;
-import com.baidu.mapapi.search.geocode.GeoCoder;
-import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
-import com.baidu.mapapi.search.geocode.ReverseGeoCodeOption;
-import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
 import com.baidu.mapapi.search.poi.PoiDetailSearchOption;
 import com.baidu.mapapi.search.poi.PoiResult;
 import com.baidu.mapapi.search.poi.PoiSearch;
@@ -53,7 +38,6 @@ import com.hkc.listener.MyOritationListener;
 import com.hkc.utitls.PoiOverlay;
 import com.hkc.utitls.ScreenUtils;
 
-import java.io.Serializable;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private final String TAG = "crazyK";
@@ -150,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onDestroy();
         //在activity执行onDestroy时执行mMapView.onDestroy()，实现地图生命周期管理
         mapView.onDestroy();
-        if(mPoiSearch != null){
+        if (mPoiSearch != null) {
             mPoiSearch.destroy();
         }
     }
@@ -255,11 +239,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     //回到中心位置
-    public void centerToMyLocation() {
+    public void centerToMyLocation(LatLng latLng) {
 
-        LatLng latLng = new LatLng(curentLatitude, curentLongtitude);
+//        LatLng latLng = new LatLng(curentLatitude, curentLongtitude);
         MapStatusUpdate mapStatusUpdate = MapStatusUpdateFactory.newLatLng(latLng);
         baiduMap.animateMapStatus(mapStatusUpdate);
+
+
     }
 
     @Override
@@ -337,7 +323,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     locationMode = MyLocationConfiguration.LocationMode.NORMAL;
                     Toast.makeText(MainActivity.this, "普通", Toast.LENGTH_SHORT).show();
                 }
-                centerToMyLocation();
+                centerToMyLocation(currentLatLng);
                 break;
         }
     }
@@ -376,7 +362,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //获取经纬度
             curentLatitude = bdLocation.getLatitude();
             curentLongtitude = bdLocation.getLongitude();
-            currentLatLng = new LatLng(curentLatitude,curentLongtitude);
+            currentLatLng = new LatLng(curentLatitude, curentLongtitude);
             //获取当前城市
             currentCity = bdLocation.getCity();
 
@@ -430,7 +416,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                            .fromResource(R.mipmap.logo_direction_s)));
 //            baiduMap.setMapStatus(MapStatusUpdateFactory.newLatLng(latLng));
             }
-        }else if (requestCode == 2 && resultCode == 2) {
+        } else if (requestCode == 2 && resultCode == 2) {
 //            PoiResult poiResult = (PoiResult) data.getSerializableExtra("poiResult");
 
             PoiResult poiResult_FromNear = data.getParcelableExtra("poiResult");
@@ -459,7 +445,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .show();
             }
         }
-        }
+    }
 
 
     //工具类PoiOverlay的自定义子类
@@ -475,6 +461,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             PoiInfo poi = getPoiResult().getAllPoi().get(index);
             // if (poi.hasCaterDetails) {
             mPoiSearch = PoiSearch.newInstance();
+            centerToMyLocation(poi.location);
+
+            Toast.makeText(MainActivity.this, poi.address, Toast.LENGTH_LONG).show();
+            addPopupWindow();
             mPoiSearch.searchPoiDetail((new PoiDetailSearchOption())
                     .poiUid(poi.uid));
             // }
@@ -482,18 +472,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    //搜索后显示周围图片
-    public void showNearbyArea( LatLng center, int radius) {
-        BitmapDescriptor centerBitmap = BitmapDescriptorFactory
-                .fromResource(R.mipmap.ic_launcher);
-        MarkerOptions ooMarker = new MarkerOptions().position(center).icon(centerBitmap);
-        baiduMap.addOverlay(ooMarker);
+    //    PopupWindow pw_marker;
+//    DemoDialog demoDialog;
 
-        OverlayOptions ooCircle = new CircleOptions().fillColor( 0xCCCCCC00 )
-                .center(center).stroke(new Stroke(5, 0xFFFF00FF ))
-                .radius(radius);
-        baiduMap.addOverlay(ooCircle);
+    // 点击marker 弹出popupwindow
+    public void addPopupWindow() {
+
+//        if(demoDialog!=null){
+//            demoDialog.dismiss();
+//        }
+//
+//        demoDialog=null;
+//        demoDialog = new DemoDialog();
+//        demoDialog.show(getSupportFragmentManager(),"");
+
+//        View view_popup =View.inflate(this, R.layout.popupwindow_main_marker, null);
+//        FragAdapter_Popup fragAdapter_popup = new FragAdapter_Popup(this.getSupportFragmentManager());
+//        ViewPager viewPager_popup = (ViewPager) view_popup.findViewById(R.id.id_main_popupwindow_viewpager);
+//        viewPager_popup.setAdapter(fragAdapter_popup);
+//        pw_marker = new PopupWindow(view_popup);
+//        pw_marker.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
+//        pw_marker.setWidth(getWindowManager().getDefaultDisplay().getWidth());
+//        pw_marker.setHeight(RelativeLayout.LayoutParams.WRAP_CONTENT);
+//        pw_marker.showAtLocation(mapView ,Gravity.LEFT|Gravity.BOTTOM,0,100);
     }
+
+
 }
 
 

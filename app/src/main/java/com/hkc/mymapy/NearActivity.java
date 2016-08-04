@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
@@ -21,8 +22,10 @@ import com.baidu.mapapi.search.poi.PoiCitySearchOption;
 import com.baidu.mapapi.search.poi.PoiDetailResult;
 import com.baidu.mapapi.search.poi.PoiDetailSearchOption;
 import com.baidu.mapapi.search.poi.PoiIndoorResult;
+import com.baidu.mapapi.search.poi.PoiNearbySearchOption;
 import com.baidu.mapapi.search.poi.PoiResult;
 import com.baidu.mapapi.search.poi.PoiSearch;
+import com.baidu.mapapi.search.poi.PoiSortType;
 import com.baidu.mapapi.search.sug.OnGetSuggestionResultListener;
 import com.baidu.mapapi.search.sug.SuggestionResult;
 import com.baidu.mapapi.search.sug.SuggestionSearch;
@@ -32,17 +35,19 @@ import com.hkc.utitls.PoiOverlay;
 
 import java.util.ArrayList;
 
-public class NearActivity extends AppCompatActivity implements View.OnClickListener, OnGetSuggestionResultListener ,OnGetPoiSearchResultListener{
+public class NearActivity extends AppCompatActivity implements View.OnClickListener, OnGetSuggestionResultListener, OnGetPoiSearchResultListener, AdapterView.OnItemClickListener {
     private TextView tv_back;
     private NearAdapter nearAdapter;
     private ListView lv_near;
     private ImageView iv_search;
     private AutoCompleteTextView autoCompleteTextView;
-    private ArrayList<String> suggest;
-    private ArrayAdapter<String> sugAdapter;
+    private final int RESULTCODE_NEARTOMAIN = 2;
+    //POI搜索相关
     private SuggestionSearch mSuggestionSearch;
     private PoiSearch mPoiSearch;
-    private final int RESULTCODE_NEARTOMAIN = 2;
+    private PoiNearbySearchOption nearbySearchOption;
+    private ArrayList<String> suggest;
+    private ArrayAdapter<String> sugAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +61,7 @@ public class NearActivity extends AppCompatActivity implements View.OnClickListe
         // 初始化建议搜索模块，注册建议搜索事件监听
         mSuggestionSearch = SuggestionSearch.newInstance();
         mSuggestionSearch.setOnGetSuggestionResultListener(this);
+
 
         tv_back = (TextView) findViewById(R.id.id_main_near_tv_back);
         iv_search = (ImageView) findViewById(R.id.id_main_near_search);
@@ -73,7 +79,7 @@ public class NearActivity extends AppCompatActivity implements View.OnClickListe
                 if (s.length() <= 0) {
                     return;
                 }
-                 //使用建议搜索服务获取建议列表，结果在onSuggestionResult()中更新
+                //使用建议搜索服务获取建议列表，结果在onSuggestionResult()中更新
                 mSuggestionSearch
                         .requestSuggestion((new SuggestionSearchOption())
                                 .keyword(s.toString()).city(MainActivity.currentCity));
@@ -95,6 +101,7 @@ public class NearActivity extends AppCompatActivity implements View.OnClickListe
             nearAdapter = new NearAdapter(this);
         }
         lv_near.setAdapter(nearAdapter);
+        lv_near.setOnItemClickListener(this);
 
     }
 
@@ -115,10 +122,14 @@ public class NearActivity extends AppCompatActivity implements View.OnClickListe
             //搜索
             case R.id.id_main_near_search:
                 String keystr = autoCompleteTextView.getText().toString();
-                if(keystr != null){
-                    mPoiSearch.searchInCity((new PoiCitySearchOption())
-                            .city(MainActivity.currentCity).keyword(keystr).pageNum(0));
-                }else {
+                if (keystr != null) {
+
+                    nearbySearchOption = new PoiNearbySearchOption().keyword(keystr).sortType(PoiSortType.distance_from_near_to_far).location(MainActivity.currentLatLng)
+                            .radius(1000).pageNum(0);
+                    mPoiSearch.searchNearby(nearbySearchOption);
+
+
+                } else {
                     Toast.makeText(NearActivity.this, "地址不能为空", Toast.LENGTH_SHORT).show();
                 }
 
@@ -170,5 +181,35 @@ public class NearActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        switch (position) {
+            case 0:
+                nearbySearchOption = new PoiNearbySearchOption().keyword("美食").sortType(PoiSortType.distance_from_near_to_far).location(MainActivity.currentLatLng)
+                        .radius(1000).pageNum(5);
+                mPoiSearch.searchNearby(nearbySearchOption);
+                break;
+            case 1:
+                nearbySearchOption = new PoiNearbySearchOption().keyword("景点").sortType(PoiSortType.distance_from_near_to_far).location(MainActivity.currentLatLng)
+                        .radius(1000).pageNum(0);
+                mPoiSearch.searchNearby(nearbySearchOption);
+                break;
+            case 2:
+                nearbySearchOption = new PoiNearbySearchOption().keyword("银行").sortType(PoiSortType.distance_from_near_to_far).location(MainActivity.currentLatLng)
+                        .radius(1000).pageNum(0);
+                mPoiSearch.searchNearby(nearbySearchOption);
+                break;
+            case 3:
+                nearbySearchOption = new PoiNearbySearchOption().keyword("休闲").sortType(PoiSortType.distance_from_near_to_far).location(MainActivity.currentLatLng)
+                        .radius(1000).pageNum(0);
+                mPoiSearch.searchNearby(nearbySearchOption);
+                break;
+            case 4:
+                nearbySearchOption = new PoiNearbySearchOption().keyword("厕所").sortType(PoiSortType.distance_from_near_to_far).location(MainActivity.currentLatLng)
+                        .radius(1000).pageNum(0);
+                mPoiSearch.searchNearby(nearbySearchOption);
+                break;
+        }
+    }
 }
 
