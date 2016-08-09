@@ -186,7 +186,7 @@ public class NearActivity extends AppCompatActivity implements View.OnClickListe
         switch (position) {
             case 0:
                 nearbySearchOption = new PoiNearbySearchOption().keyword("美食").sortType(PoiSortType.distance_from_near_to_far).location(MainActivity.currentLatLng)
-                        .radius(1000).pageNum(5);
+                        .radius(1000).pageNum(0);
                 mPoiSearch.searchNearby(nearbySearchOption);
                 break;
             case 1:

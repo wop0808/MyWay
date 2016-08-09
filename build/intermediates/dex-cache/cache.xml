@@ -1,3 +1,110 @@
 <?xml version="1.0" encoding="utf-8"?>
-<items version="2" />
+<items version="2" >
 
+    <item
+        jar="G:\MyWay\app\libs\baidumapapi_map_v4_0_0.jar"
+        jumboMode="true"
+        revision="23.0.3"
+        sha1="db4a1025ee9c6f95747aab4a69baa1391534d80e">
+        <dex dex="G:\MyWay\app\build\intermediates\transforms\dex\debug\folders\1000\2\baidumapapi_map_v4_0_0_9227910e3bdb172c60c32bdb688a523b713b7a14\classes.dex" />
+    </item>
+    <item
+        jar="G:\MyWay\app\build\intermediates\exploded-aar\com.android.support\support-vector-drawable\23.4.0\jars\classes.jar"
+        jumboMode="true"
+        revision="23.0.3"
+        sha1="c2c594cace5d83a3227b2b6e658ecbfd586d3ed9">
+        <dex dex="G:\MyWay\app\build\intermediates\transforms\dex\debug\folders\1000\10\com.android.support-support-vector-drawable-23.4.0_2ff11ca40f0b0b655ba21a159c166a3956da771c\classes.dex" />
+    </item>
+    <item
+        jar="G:\MyWay\app\build\intermediates\incremental-runtime-classes\debug\instant-run.jar"
+        jumboMode="true"
+        revision="23.0.3"
+        sha1="eac398078479a03f6a095fe059b5055f4f5ceb25">
+        <dex dex="G:\MyWay\app\build\intermediates\transforms\dex\debug\folders\1000\10\instant-run_610e44f67de4c985015ed4dd7c48b00acf00f90d\classes.dex" />
+    </item>
+    <item
+        jar="G:\MyWay\app\build\intermediates\exploded-aar\com.android.support\support-v4\23.4.0\jars\classes.jar"
+        jumboMode="true"
+        revision="23.0.3"
+        sha1="67bd36ee9340ec7c254108936ad16b24bed160cc">
+        <dex dex="G:\MyWay\app\build\intermediates\transforms\dex\debug\folders\1000\10\com.android.support-support-v4-23.4.0_52239cef357d2aca76ad848e69d13ab31dfd1616\classes.dex" />
+    </item>
+    <item
+        jar="G:\MyWay\app\build\intermediates\exploded-aar\com.android.support\appcompat-v7\23.4.0\jars\classes.jar"
+        jumboMode="true"
+        revision="23.0.3"
+        sha1="548f06de403a9409f00554b3ee12a9fdea0e236c">
+        <dex dex="G:\MyWay\app\build\intermediates\transforms\dex\debug\folders\1000\10\com.android.support-appcompat-v7-23.4.0_450839b3e3d49f6a19580a47841ad25fe382311c\classes.dex" />
+    </item>
+    <item
+        jar="G:\MyWay\app\build\intermediates\exploded-aar\com.android.support\animated-vector-drawable\23.4.0\jars\classes.jar"
+        jumboMode="true"
+        revision="23.0.3"
+        sha1="de4db3785756bfb0915a9f59a9b3f2fea7407be4">
+        <dex dex="G:\MyWay\app\build\intermediates\transforms\dex\debug\folders\1000\10\com.android.support-animated-vector-drawable-23.4.0_5b569c95ad67a730488a00b32eb2ff10f5141330\classes.dex" />
+    </item>
+    <item
+        jar="G:\MyWay\app\libs\locSDK_6.13.jar"
+        jumboMode="true"
+        revision="23.0.3"
+        sha1="2cdb37444b41b42e1ce5a8a27e5d3c22e1c57479">
+        <dex dex="G:\MyWay\app\build\intermediates\transforms\dex\debug\folders\1000\2\locSDK_6.13_76c04b0d507abb4753ee3f31bc687ad674aa4434\classes.dex" />
+    </item>
+    <item
+        jar="G:\MyWay\app\libs\baidumapapi_base_v4_0_0.jar"
+        jumboMode="true"
+        revision="23.0.3"
+        sha1="dc207932ddfb65566a157ca311a6a6dffc7fccab">
+        <dex dex="G:\MyWay\app\build\intermediates\transforms\dex\debug\folders\1000\2\baidumapapi_base_v4_0_0_99755a6bf4492fc1cdd781783c479194ddf9b85b\classes.dex" />
+    </item>
+    <item
+        jar="G:\MyWay\app\libs\baidumapapi_radar_v4_0_0.jar"
+        jumboMode="true"
+        revision="23.0.3"
+        sha1="81b00e6e2da11e12554d8cbf0acc23627fd1225b">
+        <dex dex="G:\MyWay\app\build\intermediates\transforms\dex\debug\folders\1000\2\baidumapapi_radar_v4_0_0_bbd9ab8a7288d95df75c241644ffaa1b1d09c271\classes.dex" />
+    </item>
+    <item
+        jar="G:\MyWay\app\libs\baidumapapi_util_v4_0_0.jar"
+        jumboMode="true"
+        revision="23.0.3"
+        sha1="1e9069435803e5a4f32dc429906def33a95aaf17">
+        <dex dex="G:\MyWay\app\build\intermediates\transforms\dex\debug\folders\1000\2\baidumapapi_util_v4_0_0_02274a3be03deef21f87c8e5f5fe832fb513fd16\classes.dex" />
+    </item>
+    <item
+        jar="G:\MyWay\app\libs\baidumapapi_cloud_v4_0_0.jar"
+        jumboMode="true"
+        revision="23.0.3"
+        sha1="e2aca735ca322917c5ee5fd40d663773391cf0a6">
+        <dex dex="G:\MyWay\app\build\intermediates\transforms\dex\debug\folders\1000\2\baidumapapi_cloud_v4_0_0_3771c767c0caa0dea463ce87ffa117195794b795\classes.dex" />
+    </item>
+    <item
+        jar="G:\MyWay\app\build\intermediates\exploded-aar\com.android.support\support-v4\23.4.0\jars\libs\internal_impl-23.4.0.jar"
+        jumboMode="true"
+        revision="23.0.3"
+        sha1="ea3c07504d2c8f4b13aa17c45c1b68ed9c1c3674">
+        <dex dex="G:\MyWay\app\build\intermediates\transforms\dex\debug\folders\1000\10\internal_impl-23.4.0_84d33844d101a8324be060d6927c218bc8a4b172\classes.dex" />
+    </item>
+    <item
+        jar="G:\MyWay\app\libs\baidumapapi_search_v4_0_0.jar"
+        jumboMode="true"
+        revision="23.0.3"
+        sha1="08f97ee0e35fb17d405d29bf62eef305faffffcc">
+        <dex dex="G:\MyWay\app\build\intermediates\transforms\dex\debug\folders\1000\2\baidumapapi_search_v4_0_0_514ab8b67f6b55c6f8f8d9152e071d9e9fd6f277\classes.dex" />
+    </item>
+    <item
+        jar="G:\MyWay\app\build\intermediates\incremental-classes\debug\instant-run-bootstrap.jar"
+        jumboMode="true"
+        revision="23.0.3"
+        sha1="ed48e89a83c8e5bad395f6fffb9517713f928cd7">
+        <dex dex="G:\MyWay\app\build\intermediates\transforms\dex\debug\folders\1000\10\instant-run-bootstrap_91294d01d84320ed66372774a7a4f8c3081ed390\classes.dex" />
+    </item>
+    <item
+        jar="G:\AndroidDeveloper\sdk\extras\android\m2repository\com\android\support\support-annotations\23.4.0\support-annotations-23.4.0.jar"
+        jumboMode="true"
+        revision="23.0.3"
+        sha1="ffbe55fdb2bb456b1485831706a9eac3300bb6b8">
+        <dex dex="G:\MyWay\app\build\intermediates\transforms\dex\debug\folders\1000\10\support-annotations-23.4.0_dbd2de7e56f4ce3e9612e448c3643040f5221509\classes.dex" />
+    </item>
+
+</items>

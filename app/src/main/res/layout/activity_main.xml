@@ -114,6 +114,30 @@
         android:layout_above="@+id/id_main_bottom_linearlayout"
         android:layout_height="match_parent"/>
 
+    <RelativeLayout
+        android:id="@+id/id_main_rl_vp"
+        android:layout_width="match_parent"
+        android:layout_height="90dp"
+        android:visibility="gone"
+        android:layout_above="@+id/id_main_bottom_linearlayout">
+        <android.support.v4.view.ViewPager
+            android:id="@+id/id_main_viewpager_addressinfo"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_alignTop="@+id/id_main_popupwindow_marker_iv_daohang"
+            android:layout_marginTop="30dp"
+            android:background="@android:color/white"/>
+        <ImageView
+            android:id="@+id/id_main_popupwindow_marker_iv_daohang"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="20dp"
+            android:src="@mipmap/popupwindow_daohang"/>
+
+
+    </RelativeLayout>
+
     <LinearLayout
         android:id="@+id/id_main_bottom_linearlayout"
         android:layout_width="match_parent"

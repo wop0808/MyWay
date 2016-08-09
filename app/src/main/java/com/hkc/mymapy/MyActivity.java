@@ -9,7 +9,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.hkc.dao.RegistDao;
+
 public class MyActivity extends AppCompatActivity implements View.OnClickListener{
+    private final int REQUEST_MYtoLOGIN = 1;
     private ImageView iv_back,iv_touxiang,tv_collection,iv_friend;
     private TextView tv_login_regist;
     private View v_ll_share,v_ll_set,v_ll_about,v_ll_clear,v_ll_update;
@@ -46,6 +49,15 @@ public class MyActivity extends AppCompatActivity implements View.OnClickListene
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //从登录页面返回的用户名，修改头像
+        if(requestCode == 1 && resultCode == 1){
+            String act_userName = data.getStringExtra("act_UserName");
+            tv_login_regist.setText(act_userName);
+        }
+    }
+
+    @Override
     public void onClick(View v) {
         switch (v.getId()){
             //返回
@@ -60,7 +72,7 @@ public class MyActivity extends AppCompatActivity implements View.OnClickListene
             //头像
             case R.id.id_main_my_login_regist:
                 Intent intent_MyToLogin = new Intent(this, LoginActivity.class);
-                startActivity(intent_MyToLogin);
+                startActivityForResult(intent_MyToLogin,REQUEST_MYtoLOGIN);
                 break;
             //登录/注册
             case R.id.id_main_my_regist_login:
