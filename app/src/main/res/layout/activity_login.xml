@@ -131,7 +131,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="95"/>
-            <EditText
+            <AutoCompleteTextView
+                android:id="@+id/id_login_act_username"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="15"
@@ -190,10 +191,11 @@
                 android:layout_weight="95"/>
 
             <EditText
+                android:id="@+id/id_login_psw"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="15"
-                android:hint="请输入密码（最多12位）"
+                android:hint="请输入密码"
                 android:textSize="15sp"
                 android:textColor="@color/word"
                 android:textColorHint="@color/word_gray"

@@ -10,10 +10,13 @@ import com.baidu.location.LocationClientOption;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -84,6 +87,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //POI查询相关
     private PoiSearch mPoiSearch;
     private int radius_Nearby = 500;
+    //视图中隐藏的viewpager 用于选点显示地点信息
+    private RelativeLayout rl_vp;
+    private ViewPager vp_AddressInfo;
 
 
     @Override
@@ -166,6 +172,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tv_search_colum = (TextView) findViewById(R.id.id_main_search_colum);
         iv_find = (ImageView) findViewById(R.id.id_main_main_find);
         iv_changemap = (ImageView) findViewById(R.id.id_main_changemap);
+        rl_vp = (RelativeLayout) findViewById(R.id.id_main_rl_vp);
+        vp_AddressInfo = (ViewPager) findViewById(R.id.id_main_viewpager_addressinfo);
         //获取fragment Manager
         fragmentManager = this.getSupportFragmentManager();
         //设置地图为普通地图
@@ -385,7 +393,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 1 && resultCode == 1) {
             PoiResult poiResult_FromSearch = data.getParcelableExtra("poiResult");
-
 //            Log.i(TAG, poiResult.toString());
             baiduMap.clear();
             PoiOverlay overlay_FromSearch = new MyPoiOverlay(baiduMap);
@@ -462,9 +469,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             // if (poi.hasCaterDetails) {
             mPoiSearch = PoiSearch.newInstance();
             centerToMyLocation(poi.location);
-
-            Toast.makeText(MainActivity.this, poi.address, Toast.LENGTH_LONG).show();
-            addPopupWindow();
+            visilizeViewpager();
+            Toast.makeText(MainActivity.this,poi.name+"-----------"+ poi.address, Toast.LENGTH_LONG).show();
             mPoiSearch.searchPoiDetail((new PoiDetailSearchOption())
                     .poiUid(poi.uid));
             // }
@@ -472,29 +478,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+
     //    PopupWindow pw_marker;
 //    DemoDialog demoDialog;
 
     // 点击marker 弹出popupwindow
-    public void addPopupWindow() {
+    public void visilizeViewpager() {
+        rl_vp.setVisibility(View.VISIBLE);
+        Log.i(TAG, "显示控件");
+        mapView.showZoomControls(false);
 
-//        if(demoDialog!=null){
-//            demoDialog.dismiss();
-//        }
-//
-//        demoDialog=null;
-//        demoDialog = new DemoDialog();
-//        demoDialog.show(getSupportFragmentManager(),"");
 
-//        View view_popup =View.inflate(this, R.layout.popupwindow_main_marker, null);
-//        FragAdapter_Popup fragAdapter_popup = new FragAdapter_Popup(this.getSupportFragmentManager());
-//        ViewPager viewPager_popup = (ViewPager) view_popup.findViewById(R.id.id_main_popupwindow_viewpager);
-//        viewPager_popup.setAdapter(fragAdapter_popup);
-//        pw_marker = new PopupWindow(view_popup);
-//        pw_marker.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
-//        pw_marker.setWidth(getWindowManager().getDefaultDisplay().getWidth());
-//        pw_marker.setHeight(RelativeLayout.LayoutParams.WRAP_CONTENT);
-//        pw_marker.showAtLocation(mapView ,Gravity.LEFT|Gravity.BOTTOM,0,100);
+
     }
 
 

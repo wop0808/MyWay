@@ -124,10 +124,12 @@
                 android:layout_height="match_parent"
                 android:layout_weight="95"/>
             <EditText
+                android:id="@+id/id_regist_username"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="15"
-                android:hint="请输入手机号"
+                android:hint="请输入用户名"
+                android:singleLine="true"
                 android:textSize="15sp"
                 android:textColor="@color/word"
                 android:textColorHint="@color/word"
@@ -177,17 +179,18 @@
                 android:layout_weight="95"/>
 
             <EditText
+                android:id="@+id/id_regist_psw"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="15"
-                android:hint="请输入密码（最多12位）"
+                android:hint="请输入密码"
+                android:singleLine="true"
                 android:textSize="15sp"
                 android:textColor="@color/word"
                 android:textColorHint="@color/word_gray"
                 android:background="@null"
                 android:textCursorDrawable="@null"
-                android:inputType="textPassword"
-                android:maxLength="12"/>
+                android:inputType="textPassword"/>
 
         </LinearLayout>
         <TextView
@@ -238,21 +241,23 @@
                 android:layout_height="match_parent"
                 android:layout_weight="15">
                 <EditText
+                    android:id="@+id/id_regist_repsw"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="20"
-                    android:hint="验证码"
+                    android:hint="再次输入密码"
                     android:textSize="15sp"
+                    android:inputType="textPassword"
                     android:textColor="@color/word"
                     android:textColorHint="@color/word_gray"
                     android:background="@null"
                     android:textCursorDrawable="@null" />
-                <ImageView
+                <!--<ImageView
                     android:id="@+id/id_regist_getyanzheng"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="42"
-                    android:src="@mipmap/registactivity_abtain_yanzheng" />
+                    android:src="@mipmap/registactivity_abtain_yanzheng" />-->
             </LinearLayout>
         </LinearLayout>
         <TextView
