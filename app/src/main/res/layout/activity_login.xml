@@ -138,6 +138,7 @@
                 android:layout_weight="15"
                 android:hint="请输入用户名"
                 android:textSize="15sp"
+                android:singleLine="true"
                 android:textColor="@color/word"
                 android:textColorHint="@color/word"
                 android:background="@null"
@@ -198,11 +199,11 @@
                 android:hint="请输入密码"
                 android:textSize="15sp"
                 android:textColor="@color/word"
+                android:singleLine="true"
                 android:textColorHint="@color/word_gray"
                 android:background="@null"
                 android:textCursorDrawable="@null"
-                android:inputType="textPassword"
-                android:maxLength="12"/>
+                android:inputType="textPassword"/>
 
         </LinearLayout>
         <TextView

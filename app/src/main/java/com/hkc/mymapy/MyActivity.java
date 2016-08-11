@@ -9,8 +9,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.hkc.dao.RegistDao;
-
 public class MyActivity extends AppCompatActivity implements View.OnClickListener{
     private final int REQUEST_MYtoLOGIN = 1;
     private ImageView iv_back,iv_touxiang,tv_collection,iv_friend;

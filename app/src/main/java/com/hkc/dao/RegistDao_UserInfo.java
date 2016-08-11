@@ -7,14 +7,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import java.util.ArrayList;
-
 /**
  * Created by Administrator on 2016/8/5.
  * 用于账号密码数据库的建立，及数据查询等功能
  * 逻辑不够完善，不知道如何判断数据库内账号ID 不重复问题
  */
-public class RegistDao extends SQLiteOpenHelper {
+public class RegistDao_UserInfo extends SQLiteOpenHelper {
     public static int mDB_UserInfo_Version = 1;
     public static String mDB_UserInfo_Name = "UserInfo.db";
     public static String mDB_UserInfo_TableName = "UserInfo";
@@ -27,13 +25,13 @@ public class RegistDao extends SQLiteOpenHelper {
     private String TAG = "crazyK";
 
     //用于读数据库的构造函数
-    public RegistDao(Context contextRead) {
+    public RegistDao_UserInfo(Context contextRead) {
         super(contextRead, mDB_UserInfo_Name, null, mDB_UserInfo_Version);
         this.contextRead = contextRead;
     }
 
     //用于写数据库的构造函数
-    public RegistDao(Context contextWrite, String userName, String psw) {
+    public RegistDao_UserInfo(Context contextWrite, String userName, String psw) {
         super(contextWrite, mDB_UserInfo_Name, null, mDB_UserInfo_Version);
         this.contextWrite = contextWrite;
         this.userName = userName;
@@ -52,11 +50,11 @@ public class RegistDao extends SQLiteOpenHelper {
     }
 
     //以二维数组的形式返回读取到的账号密码
-    public String[][] startRead(RegistDao registDao) {
+    public String[][] startRead(RegistDao_UserInfo registDaoUserInfo) {
         Log.i(TAG, "开始读取数据库");
         //获得可读权限
-        SQLiteDatabase readableDatabase = registDao.getReadableDatabase();
-        Cursor cursor = readableDatabase.query(RegistDao.mDB_UserInfo_TableName, null, null, null, null, null, null, null);
+        SQLiteDatabase readableDatabase = registDaoUserInfo.getReadableDatabase();
+        Cursor cursor = readableDatabase.query(RegistDao_UserInfo.mDB_UserInfo_TableName, null, null, null, null, null, null, null);
         //接收用户名
         String[] userNames = new String[cursor.getCount()];
         //接收密码
@@ -67,8 +65,8 @@ public class RegistDao extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) {
             do {
 //                Log.i(TAG, "y游标读取数据");
-                userNames[x++] = cursor.getString(cursor.getColumnIndex(RegistDao.mUserInfo_username));
-                psws[y++] = cursor.getString(cursor.getColumnIndex(RegistDao.mUserInfo_psw));
+                userNames[x++] = cursor.getString(cursor.getColumnIndex(RegistDao_UserInfo.mUserInfo_username));
+                psws[y++] = cursor.getString(cursor.getColumnIndex(RegistDao_UserInfo.mUserInfo_psw));
 
             } while (cursor.moveToNext());
         }
@@ -84,14 +82,14 @@ public class RegistDao extends SQLiteOpenHelper {
     }
 
     //写入账号密码
-    public void startWrite(RegistDao registDao) {
-        SQLiteDatabase writableDatabase = registDao.getWritableDatabase();
+    public void startWrite(RegistDao_UserInfo registDaoUserInfo) {
+        SQLiteDatabase writableDatabase = registDaoUserInfo.getWritableDatabase();
 
         ContentValues values = new ContentValues();
         Log.i(TAG, "开始写入数据：" + userName + "---------" + psw);
         values.put("username", userName);
         values.put("psw", psw);
-        writableDatabase.insert(RegistDao.mDB_UserInfo_TableName, "nullColumn", values);
+        writableDatabase.insert(RegistDao_UserInfo.mDB_UserInfo_TableName, "nullColumn", values);
 
         if (writableDatabase.isOpen()) {
             writableDatabase.close();
@@ -101,9 +99,9 @@ public class RegistDao extends SQLiteOpenHelper {
     }
 
     //根据指定账户名查询密码
-    public String getPswByID(RegistDao registDao ,String ID){
-        SQLiteDatabase readableDatabase = registDao.getReadableDatabase();
-        Cursor cursor = readableDatabase.query(RegistDao.mDB_UserInfo_TableName, new String[]{mUserInfo_psw}, mUserInfo_username+ "= ?", new String[]{ID}, null, null, null);
+    public String getPswByID(RegistDao_UserInfo registDaoUserInfo, String ID){
+        SQLiteDatabase readableDatabase = registDaoUserInfo.getReadableDatabase();
+        Cursor cursor = readableDatabase.query(RegistDao_UserInfo.mDB_UserInfo_TableName, new String[]{mUserInfo_psw}, mUserInfo_username+ "= ?", new String[]{ID}, null, null, null);
         String pswByID ="";
         if(cursor.moveToFirst()){
             do{

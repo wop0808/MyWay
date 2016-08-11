@@ -9,7 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.hkc.dao.RegistDao;
+import com.hkc.dao.RegistDao_UserInfo;
 
 public class RegistActivity extends AppCompatActivity implements View.OnClickListener{
     private TextView tv_back;
@@ -61,8 +61,8 @@ public class RegistActivity extends AppCompatActivity implements View.OnClickLis
                 }
                 if (!TextUtils.isEmpty(userName) && TextUtils.equals(psw,repsw)){
                     Toast.makeText(RegistActivity.this, "注册成功", Toast.LENGTH_SHORT).show();
-                    RegistDao registDao = new RegistDao(this,userName,psw);
-                    registDao.startWrite(registDao);
+                    RegistDao_UserInfo registDaoUserInfo = new RegistDao_UserInfo(this,userName,psw);
+                    registDaoUserInfo.startWrite(registDaoUserInfo);
                     this.finish();
                 }
                 break;

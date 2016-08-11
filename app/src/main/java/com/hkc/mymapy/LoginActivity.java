@@ -6,7 +6,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -15,11 +14,10 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.hkc.dao.RegistDao;
+import com.hkc.dao.RegistDao_UserInfo;
 import com.hkc.utitls.IsArraysEmpty;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemClickListener{
     private final int RESULT_MYtoLOGIN = 1;
@@ -31,7 +29,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private EditText et_psw;
     private String[] mUserNames;
     private String[] mUserPsws;
-    private RegistDao registDao;
+    private RegistDao_UserInfo registDaoUserInfo;
     private Context context;
     //账号密码由数组→结合
     private ArrayList<String> userNameLists;
@@ -41,7 +39,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        registDao = new RegistDao(this);
+        registDaoUserInfo = new RegistDao_UserInfo(this);
         context = this;
 
         tv_regist = (ImageView) findViewById(R.id.id_login_regist);
@@ -61,7 +59,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
 //                Log.i(TAG, "act 改变监听");
-                String[][] mUserInfoDatas = registDao.startRead(registDao);
+                String[][] mUserInfoDatas = registDaoUserInfo.startRead(registDaoUserInfo);
                 mUserNames = mUserInfoDatas[0];
                 mUserPsws = mUserInfoDatas[1];
 //                Log.i(TAG, ""+mUserNames[0] +"------" + mUserPsws[0]);
@@ -136,7 +134,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 //        et_psw.setText(mUserPsws[position]);
         String ID = (String) parent.getItemAtPosition(position);
-        String psw = registDao.getPswByID(registDao,ID);
+        String psw = registDaoUserInfo.getPswByID(registDaoUserInfo,ID);
         et_psw.setText(psw);
 
     }

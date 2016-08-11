@@ -47,7 +47,7 @@ import com.hkc.utitls.ScreenUtils;
 import java.util.List;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener,ViewPager.OnPageChangeListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, ViewPager.OnPageChangeListener {
     private final String TAG = "crazyK";
 
     private final int RequestCode_mainToSearch = 1;
@@ -94,10 +94,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private int radius_Nearby = 500;
     //视图中隐藏的viewpager 用于选点显示地点信息
     private RelativeLayout rl_vp;
+    private ImageView iv_routePlan;
     private ViewPager vp_AddressInfo;
     private Vp_AddressInfo_Adapter vp_addressInfo_adapter;
-    //点击搜索结果的marker后 得到的allPoi
-    private List<PoiInfo> poiInfoList;
+    //点击搜索后得到的poiResult
+    private PoiResult poiResult;
+    //点击搜索结果marker 以及 滑动viewpager时获得的poiInfo
+    private PoiInfo poiInfo_FromMarkerAndVp;
 
 
     @Override
@@ -115,9 +118,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initListener();
         //开始定位
         startLocation();
-
-
-
 
 
     }
@@ -185,6 +185,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         iv_changemap = (ImageView) findViewById(R.id.id_main_changemap);
         rl_vp = (RelativeLayout) findViewById(R.id.id_main_rl_vp);
         vp_AddressInfo = (ViewPager) findViewById(R.id.id_main_viewpager_addressinfo);
+        iv_routePlan = (ImageView) findViewById(R.id.id_main_popupwindow_marker_iv_daohang);
         //获取fragment Manager
         fragmentManager = this.getSupportFragmentManager();
         //设置地图为普通地图
@@ -220,6 +221,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tv_way.setOnClickListener(this);
         tv_my.setOnClickListener(this);
         vp_AddressInfo.setOnPageChangeListener(this);
+        iv_routePlan.setOnClickListener(this);
     }
 
     //初始化地图标尺长度，大概20m
@@ -356,15 +358,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onPageSelected(int position) {
-        PoiInfo poiInfo = poiInfoList.get(position);
-        centerToMyLocation(poiInfo.location);
+        poiInfo_FromMarkerAndVp = poiResult.getAllPoi().get(position);
+        centerToMyLocation(poiInfo_FromMarkerAndVp.location);
     }
 
     @Override
     public void onPageScrollStateChanged(int state) {
 
     }
-
 
 
     private class MyLocationListener implements BDLocationListener {
@@ -405,65 +406,73 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //code=2 表示从NearActivity中返回的POI搜索结果
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(rl_vp.getVisibility() == View.VISIBLE){
+            rl_vp.setVisibility(View.GONE);
+        }
         if (requestCode == 1 && resultCode == 1) {
-            PoiResult poiResult_FromSearch = data.getParcelableExtra("poiResult");
+            poiResult = data.getParcelableExtra("poiResult");
 //            Log.i(TAG, poiResult.toString());
             baiduMap.clear();
             PoiOverlay overlay_FromSearch = new MyPoiOverlay(baiduMap);
             baiduMap.setOnMarkerClickListener(overlay_FromSearch);
-            overlay_FromSearch.setData(poiResult_FromSearch);
+            overlay_FromSearch.setData(poiResult);
             overlay_FromSearch.addToMap();
             overlay_FromSearch.zoomToSpan();
 
-            //蛟神黑科技
-            vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(fragmentManager);
-            vp_addressInfo_adapter.setPoiResult(poiResult_FromSearch);
-            vp_AddressInfo.setOffscreenPageLimit(10);
-            vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
+            //蛟神黑科技 将activityi获得的数据-->adapter -->fragment
+            //避免了控件在onCreateView方法还未执行完时，对控件进行操作，爆出空指针异常
+            if (vp_AddressInfo.getAdapter() == null) {
+                vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(fragmentManager);
+                vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
+            }
+            vp_addressInfo_adapter.setPoiResult(poiResult);
+//            Toast.makeText(this,"新搜索",Toast.LENGTH_SHORT).show();
+
 
             /**
              * 逻辑还需完善 使其能自动搜索
              * */
-            if (poiResult_FromSearch.error == SearchResult.ERRORNO.AMBIGUOUS_KEYWORD) {
+            if (poiResult.error == SearchResult.ERRORNO.AMBIGUOUS_KEYWORD) {
 
                 // 当输入关键字在本市没有找到，但在其他城市找到时，返回包含该关键字信息的城市列表
                 String strInfo = "在";
-                for (CityInfo cityInfo : poiResult_FromSearch.getSuggestCityList()) {
+                for (CityInfo cityInfo : poiResult.getSuggestCityList()) {
                     strInfo += cityInfo.city;
                     strInfo += ",";
                 }
                 strInfo += "找到结果";
                 Toast.makeText(this, strInfo, Toast.LENGTH_LONG)
                         .show();
-//            Bundle bundle = data.getExtras();
-//            LatLng latLng = bundle.getParcelable("position");
-//            baiduMap.clear();
-//            baiduMap.addOverlay(new MarkerOptions().position(latLng)
-//                    .icon(BitmapDescriptorFactory
-//                            .fromResource(R.mipmap.logo_direction_s)));
-//            baiduMap.setMapStatus(MapStatusUpdateFactory.newLatLng(latLng));
             }
         } else if (requestCode == 2 && resultCode == 2) {
 //            PoiResult poiResult = (PoiResult) data.getSerializableExtra("poiResult");
 
-            PoiResult poiResult_FromNear = data.getParcelableExtra("poiResult");
+            poiResult = data.getParcelableExtra("poiResult");
 
 //            Log.i(TAG, poiResult.toString());
             baiduMap.clear();
             PoiOverlay overlay_FromNear = new MyPoiOverlay(baiduMap);
             baiduMap.setOnMarkerClickListener(overlay_FromNear);
-            overlay_FromNear.setData(poiResult_FromNear);
+            overlay_FromNear.setData(poiResult);
             overlay_FromNear.addToMap();
             overlay_FromNear.zoomToSpan();
+
+            //蛟神黑科技 将activityi获得的数据-->adapter -->fragment
+            //避免了控件在onCreateView方法还未执行完时，对控件进行操作，爆出空指针异常
+            if (vp_AddressInfo.getAdapter() == null) {
+                vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(fragmentManager);
+                vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
+            }
+            vp_addressInfo_adapter.setPoiResult(poiResult);
 
             /**
              * 逻辑还需完善 使其能自动搜索
              * */
-            if (poiResult_FromNear.error == SearchResult.ERRORNO.AMBIGUOUS_KEYWORD) {
+            if (poiResult.error == SearchResult.ERRORNO.AMBIGUOUS_KEYWORD) {
 
                 // 当输入关键字在本市没有找到，但在其他城市找到时，返回包含该关键字信息的城市列表
                 String strInfo = "在";
-                for (CityInfo cityInfo : poiResult_FromNear.getSuggestCityList()) {
+                for (CityInfo cityInfo : poiResult.getSuggestCityList()) {
                     strInfo += cityInfo.city;
                     strInfo += ",";
                 }
@@ -482,45 +491,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             super(baiduMap);
         }
 
+        //点击查询结果覆盖物的监听
         @Override
         public boolean onPoiClick(int index) {
             super.onPoiClick(index);
-            poiInfoList = getPoiResult().getAllPoi();
-            PoiInfo poi = poiInfoList.get(index);
-            // if (poi.hasCaterDetails) {
+            poiInfo_FromMarkerAndVp = getPoiResult().getAllPoi().get(index);
             mPoiSearch = PoiSearch.newInstance();
-            centerToMyLocation(poi.location);
+            centerToMyLocation(poiInfo_FromMarkerAndVp.location);
 
-//            visilizeViewpager(index);
-            //点击marker后显示隐藏的viewpager
             rl_vp.setVisibility(View.VISIBLE);
             mapView.showZoomControls(false);
 
-//            Vp_AddressInfo_Adapter vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(fragmentManager);
-//            vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
-            //获得第index个fragment,并且设置fragment中的信息
-//            Fragment_popup1 fragment = (Fragment_popup1) vp_addressInfo_adapter.fragmentList.get(index);
-//            fragment.setInfo(poi);
-            vp_AddressInfo.setCurrentItem(index,true);
+            vp_AddressInfo.setCurrentItem(index, true);
 
-//            Toast.makeText(MainActivity.this,poi.name+"-----------"+ poi.address, Toast.LENGTH_LONG).show();
             mPoiSearch.searchPoiDetail((new PoiDetailSearchOption())
-                    .poiUid(poi.uid));
+                    .poiUid(poiInfo_FromMarkerAndVp.uid));
             // }
             return true;
         }
     }
-
-
-//    //点击marker后显示隐藏的viewpager
-//    public void visilizeViewpager(int positon) {
-//        rl_vp.setVisibility(View.VISIBLE);
-//        mapView.showZoomControls(false);
-//        Vp_AddressInfo_Adapter vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(fragmentManager);
-//        vp_addressInfo_adapter.fragmentList.get(positon)
-//        vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
-//
-//    }
 
 }
 
