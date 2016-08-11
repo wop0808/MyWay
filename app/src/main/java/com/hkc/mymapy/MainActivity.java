@@ -9,6 +9,7 @@ import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -37,12 +38,16 @@ import com.baidu.mapapi.search.core.SearchResult;
 import com.baidu.mapapi.search.poi.PoiDetailSearchOption;
 import com.baidu.mapapi.search.poi.PoiResult;
 import com.baidu.mapapi.search.poi.PoiSearch;
+import com.hkc.adapter.Vp_AddressInfo_Adapter;
+import com.hkc.fragment.Fragment_popup1;
 import com.hkc.listener.MyOritationListener;
 import com.hkc.utitls.PoiOverlay;
 import com.hkc.utitls.ScreenUtils;
 
+import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener,ViewPager.OnPageChangeListener {
     private final String TAG = "crazyK";
 
     private final int RequestCode_mainToSearch = 1;
@@ -90,6 +95,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //视图中隐藏的viewpager 用于选点显示地点信息
     private RelativeLayout rl_vp;
     private ViewPager vp_AddressInfo;
+    private Vp_AddressInfo_Adapter vp_addressInfo_adapter;
+    //点击搜索结果的marker后 得到的allPoi
+    private List<PoiInfo> poiInfoList;
 
 
     @Override
@@ -107,6 +115,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initListener();
         //开始定位
         startLocation();
+
+
+
 
 
     }
@@ -208,6 +219,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tv_near.setOnClickListener(this);
         tv_way.setOnClickListener(this);
         tv_my.setOnClickListener(this);
+        vp_AddressInfo.setOnPageChangeListener(this);
     }
 
     //初始化地图标尺长度，大概20m
@@ -336,21 +348,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-//    //当获得正向解析数据
-//    @Override
-//    public void onGetGeoCodeResult(GeoCodeResult geoCodeResult) {
-//
-//    }
-//    //当获得反向解析数据
-//    @Override
-//    public void onGetReverseGeoCodeResult(ReverseGeoCodeResult reverseGeoCodeResult) {
-//        currentAddress = reverseGeoCodeResult.getAddressDetail();
-//
-//        String test = reverseGeoCodeResult.getAddress();
-////        String test = currentAddress.city;
-//        Toast.makeText(this, test, Toast.LENGTH_LONG).show();
-//        Log.i(TAG, test);
-//    }
+    //地址信息viewpager滑动监听
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+    }
+
+    @Override
+    public void onPageSelected(int position) {
+        PoiInfo poiInfo = poiInfoList.get(position);
+        centerToMyLocation(poiInfo.location);
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
+
+    }
+
 
 
     private class MyLocationListener implements BDLocationListener {
@@ -400,6 +414,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             overlay_FromSearch.setData(poiResult_FromSearch);
             overlay_FromSearch.addToMap();
             overlay_FromSearch.zoomToSpan();
+
+            //蛟神黑科技
+            vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(fragmentManager);
+            vp_addressInfo_adapter.setPoiResult(poiResult_FromSearch);
+            vp_AddressInfo.setOffscreenPageLimit(10);
+            vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
 
             /**
              * 逻辑还需完善 使其能自动搜索
@@ -456,7 +476,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     //工具类PoiOverlay的自定义子类
-    private class MyPoiOverlay extends PoiOverlay {
+    public class MyPoiOverlay extends PoiOverlay {
 
         public MyPoiOverlay(BaiduMap baiduMap) {
             super(baiduMap);
@@ -465,12 +485,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public boolean onPoiClick(int index) {
             super.onPoiClick(index);
-            PoiInfo poi = getPoiResult().getAllPoi().get(index);
+            poiInfoList = getPoiResult().getAllPoi();
+            PoiInfo poi = poiInfoList.get(index);
             // if (poi.hasCaterDetails) {
             mPoiSearch = PoiSearch.newInstance();
             centerToMyLocation(poi.location);
-            visilizeViewpager();
-            Toast.makeText(MainActivity.this,poi.name+"-----------"+ poi.address, Toast.LENGTH_LONG).show();
+
+//            visilizeViewpager(index);
+            //点击marker后显示隐藏的viewpager
+            rl_vp.setVisibility(View.VISIBLE);
+            mapView.showZoomControls(false);
+
+//            Vp_AddressInfo_Adapter vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(fragmentManager);
+//            vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
+            //获得第index个fragment,并且设置fragment中的信息
+//            Fragment_popup1 fragment = (Fragment_popup1) vp_addressInfo_adapter.fragmentList.get(index);
+//            fragment.setInfo(poi);
+            vp_AddressInfo.setCurrentItem(index,true);
+
+//            Toast.makeText(MainActivity.this,poi.name+"-----------"+ poi.address, Toast.LENGTH_LONG).show();
             mPoiSearch.searchPoiDetail((new PoiDetailSearchOption())
                     .poiUid(poi.uid));
             // }
@@ -479,19 +512,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    //    PopupWindow pw_marker;
-//    DemoDialog demoDialog;
-
-    // 点击marker 弹出popupwindow
-    public void visilizeViewpager() {
-        rl_vp.setVisibility(View.VISIBLE);
-        Log.i(TAG, "显示控件");
-        mapView.showZoomControls(false);
-
-
-
-    }
-
+//    //点击marker后显示隐藏的viewpager
+//    public void visilizeViewpager(int positon) {
+//        rl_vp.setVisibility(View.VISIBLE);
+//        mapView.showZoomControls(false);
+//        Vp_AddressInfo_Adapter vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(fragmentManager);
+//        vp_addressInfo_adapter.fragmentList.get(positon)
+//        vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
+//
+//    }
 
 }
 

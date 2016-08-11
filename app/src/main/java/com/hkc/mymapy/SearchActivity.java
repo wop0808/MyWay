@@ -130,6 +130,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
             //搜索按键
             case R.id.id_search_fangdajing:
                 Toast.makeText(SearchActivity.this, "已点击", Toast.LENGTH_SHORT).show();
+
                 String search_content = act_search.getText().toString().trim();
                 if(search_content != null){
                     mPoiSearch.searchInCity((new PoiCitySearchOption())
