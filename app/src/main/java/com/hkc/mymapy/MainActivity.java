@@ -255,9 +255,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 currentX = x;
             }
         });
-
-//        //反解析当前地址信息
-//        initLocInfo();
     }
 
     //回到中心位置
@@ -397,8 +394,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 baiduMap.animateMapStatus(mapStatusUpdate);
                 isFirstIn = false;
             }
-
-
         }
     }
 

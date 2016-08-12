@@ -1,7 +1,8 @@
 package com.hkc.mymapy;
 
-import android.support.v7.app.AppCompatActivity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -9,17 +10,13 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.baidu.mapapi.search.geocode.GeoCodeOption;
-import com.baidu.mapapi.search.route.PlanNode;
-import com.baidu.mapapi.search.route.RoutePlanSearch;
-import com.baidu.mapapi.search.route.TransitRoutePlanOption;
 import com.hkc.adapter.WayAdapter;
 
 public class WayActivity extends AppCompatActivity implements View.OnClickListener{
     private WayAdapter wayAdapter;
     private ImageView iv_back,iv_car,iv_bus,iv_walk;
     private TextView tv_search;
-    private EditText et_destination;
+    private EditText et_destination,et_mylocation;
     private ListView listView;
     private ImageView iv_change;
 
@@ -36,6 +33,7 @@ public class WayActivity extends AppCompatActivity implements View.OnClickListen
         et_destination = (EditText) findViewById(R.id.id_main_way_destination);
         iv_change = (ImageView) findViewById(R.id.id_main_way_change);
         wayAdapter = new WayAdapter(this);
+        et_mylocation = (EditText) findViewById(R.id.id_main_way_et_myposition);
 
 
         iv_back.setOnClickListener(this);
@@ -52,14 +50,28 @@ public class WayActivity extends AppCompatActivity implements View.OnClickListen
         iv_car.setSelected(true);
     }
 
+
+
     @Override
     public void onClick(View v) {
         switch (v.getId()){
             //搜索
             case R.id.id_main_way_tv_search:
                 Toast.makeText(this,"tv_search",Toast.LENGTH_SHORT).show();
-                RoutePlanSearch routePlanSearch = RoutePlanSearch.newInstance();
 
+                //获取我的位置：stNode, 终点位置：enNode
+                String stNode = et_mylocation.getText().toString().trim();
+                String enNode = et_destination.getText().toString().trim();
+
+                Intent intent_WayToRouteplan = new Intent(this,RouteplanActivity.class);
+                startActivity(intent_WayToRouteplan);
+
+
+
+
+
+//                RoutePlanSearch routePlanSearch = RoutePlanSearch.newInstance();
+//
 //
 //                PlanNode stNode = PlanNode.withCityNameAndPlaceName("北京", "龙泽");
 //                PlanNode enNode = PlanNode.withCityNameAndPlaceName("北京", "西单");
@@ -96,7 +108,15 @@ public class WayActivity extends AppCompatActivity implements View.OnClickListen
                 Toast.makeText(this,"iv_change",Toast.LENGTH_SHORT).show();
                 break;
 
+        }
+    }
 
+    //判断我的位置stNode 是否为“我的位置”
+    public boolean isMyLocation(String stNode){
+        if(stNode.equals("我的位置")){
+            return true;
+        }else {
+            return false;
         }
     }
 }

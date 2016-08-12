@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.hkc.mymapy.RouteplanActivity">
+
+    <LinearLayout
+        android:id="@+id/id_routeplan_ll_top"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@color/top_blue_light">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginLeft="@dimen/main_margin_left_right"
+            android:layout_marginRight="@dimen/main_margin_left_right">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="610"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:id="@+id/id_main_way_iv_back"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@mipmap/near_pic_comeback" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="140"
+                android:orientation="horizontal">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center">
+                    <ImageView
+                        android:id="@+id/id_main_way_car"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/way_car"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center">
+                    <ImageView
+                        android:id="@+id/id_main_way_bus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/way_gongjiao"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center">
+                    <ImageView
+                        android:id="@+id/id_main_way_walk"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/way_walk"/>
+                </LinearLayout>
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:id="@+id/id_main_way_search"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="650">
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/id_routeplan_map"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/id_routeplan_ll_buttom_info"
+        android:layout_below="@id/id_routeplan_ll_top">
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/id_routeplan_ll_buttom_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal">
+    </LinearLayout>
+
+
+</RelativeLayout>

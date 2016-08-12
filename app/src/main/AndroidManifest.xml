@@ -25,9 +25,12 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <!-- CBrfqmEhD5db8b2DtUpoPI3vg3VUMqaL
+
+        <!--
+        CBrfqmEhD5db8b2DtUpoPI3vg3VUMqaL
         3eDTDoWa0U5ZcbDdF6VZF5ItKypYyEYq
-            b9doGGZzQ68caioSE0FFhnrejqPPlaON-->
+            b9doGGZzQ68caioSE0FFhnrejqPPlaON
+        -->
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
             android:value="b9doGGZzQ68caioSE0FFhnrejqPPlaON" />
@@ -47,11 +50,14 @@
         <activity android:name=".ShareActivity" />
         <activity android:name=".NearActivity" />
         <activity android:name=".MyActivity" />
-        <activity android:name=".WayActivity"></activity>
+        <activity android:name=".WayActivity" />
+
         <service
             android:name="com.baidu.location.f"
             android:enabled="true"
-            android:process=":remote"/>
+            android:process=":remote" />
+
+        <activity android:name=".RouteplanActivity"></activity>
     </application>
 
 </manifest>
