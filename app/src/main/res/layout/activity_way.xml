@@ -137,8 +137,8 @@
                     android:layout_height="0dp"
                     android:layout_weight="1"
                     android:gravity="center_vertical">
-                    <EditText
-                        android:id="@+id/id_main_way_et_myposition"
+                    <AutoCompleteTextView
+                        android:id="@+id/id_way_act_myposition"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:hint="我的位置"
@@ -162,8 +162,8 @@
                     android:layout_height="0dp"
                     android:layout_weight="1"
                     android:gravity="center_vertical">
-                    <EditText
-                        android:id="@+id/id_main_way_destination"
+                    <AutoCompleteTextView
+                        android:id="@+id/id_way_act_destination"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:hint="输入终点"

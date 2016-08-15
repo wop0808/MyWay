@@ -241,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         locationClientOption.setCoorType("bd09ll");//设置坐标类型
         locationClientOption.setIsNeedAddress(true);
         locationClientOption.setOpenGps(true);
-        locationClientOption.setScanSpan(1000);
+        locationClientOption.setScanSpan(120);
 
 
         locationClient.setLocOption(locationClientOption);
@@ -259,12 +259,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     //回到中心位置
     public void centerToMyLocation(LatLng latLng) {
-
-//        LatLng latLng = new LatLng(curentLatitude, curentLongtitude);
         MapStatusUpdate mapStatusUpdate = MapStatusUpdateFactory.newLatLng(latLng);
         baiduMap.animateMapStatus(mapStatusUpdate);
-
-
     }
 
     @Override
@@ -335,13 +331,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             //发现(回归原点 并切换模式)
             case R.id.id_main_main_find:
-                if (++count_search % 2 == 1) {
-                    locationMode = MyLocationConfiguration.LocationMode.COMPASS;
-                    Toast.makeText(MainActivity.this, "罗盘", Toast.LENGTH_SHORT).show();
-                } else {
-                    locationMode = MyLocationConfiguration.LocationMode.NORMAL;
-                    Toast.makeText(MainActivity.this, "普通", Toast.LENGTH_SHORT).show();
-                }
+                locationMode = MyLocationConfiguration.LocationMode.NORMAL;
+//                Toast.makeText(MainActivity.this, "普通", Toast.LENGTH_SHORT).show();
                 centerToMyLocation(currentLatLng);
                 break;
         }
@@ -401,7 +392,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //code=2 表示从NearActivity中返回的POI搜索结果
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(rl_vp.getVisibility() == View.VISIBLE){
+        if (rl_vp.getVisibility() == View.VISIBLE) {
             rl_vp.setVisibility(View.GONE);
         }
         if (requestCode == 1 && resultCode == 1) {

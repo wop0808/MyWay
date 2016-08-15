@@ -86,6 +86,48 @@
         android:layout_height="match_parent"
         android:layout_above="@+id/id_routeplan_ll_buttom_info"
         android:layout_below="@id/id_routeplan_ll_top">
+        <com.baidu.mapapi.map.MapView
+            android:id="@+id/id_routeplan_mapview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        </com.baidu.mapapi.map.MapView>
+
+        <ImageView
+            android:id="@+id/id_routeplan_changemap"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="@dimen/main_margin_left_right"
+            android:layout_marginTop="@dimen/main_margin_top"
+            android:src="@mipmap/main_changemap_pic" />
+
+        <TextView
+            android:id="@+id/id_routeplan_lukuang"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/id_routeplan_changemap"
+            android:layout_marginRight="@dimen/main_margin_left_right"
+            android:layout_marginTop="@dimen/main_margin_top"
+            android:background="@drawable/main_lukuang"
+            android:textIsSelectable="true" />
+
+        <ImageView
+            android:id="@+id/id_routeplan_logo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/main_margin_left_right"
+            android:layout_marginTop="@dimen/main_margin_top"
+            android:src="@mipmap/main_logo_pic" />
+
+        <ImageView
+            android:id="@+id/id_routeplan_find"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="20dp"
+            android:layout_marginLeft="@dimen/main_margin_left_right"
+            android:src="@mipmap/main_faxian_pic" />
     </RelativeLayout>
 
     <LinearLayout
