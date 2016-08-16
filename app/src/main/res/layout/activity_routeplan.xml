@@ -40,7 +40,7 @@
                     android:layout_weight="1"
                     android:gravity="center">
                     <ImageView
-                        android:id="@+id/id_main_way_car"
+                        android:id="@+id/id_routeplan_way_car"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:src="@drawable/way_car"/>
@@ -51,7 +51,7 @@
                     android:layout_weight="1"
                     android:gravity="center">
                     <ImageView
-                        android:id="@+id/id_main_way_bus"
+                        android:id="@+id/id_routeplan_way_bus"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:src="@drawable/way_gongjiao"/>
@@ -62,7 +62,7 @@
                     android:layout_weight="1"
                     android:gravity="center">
                     <ImageView
-                        android:id="@+id/id_main_way_walk"
+                        android:id="@+id/id_routeplan_way_walk"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:src="@drawable/way_walk"/>

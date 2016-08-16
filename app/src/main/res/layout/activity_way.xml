@@ -139,7 +139,7 @@
                     android:gravity="center_vertical">
                     <AutoCompleteTextView
                         android:id="@+id/id_way_act_myposition"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="我的位置"
                         android:textColorHint="#ffffff"
@@ -164,7 +164,7 @@
                     android:gravity="center_vertical">
                     <AutoCompleteTextView
                         android:id="@+id/id_way_act_destination"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="输入终点"
                         android:textColorHint="@color/word_blue_gray"

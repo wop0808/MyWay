@@ -3,9 +3,12 @@ package com.hkc.mymapy;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -14,9 +17,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.search.sug.OnGetSuggestionResultListener;
+import com.baidu.mapapi.search.sug.SuggestionResult;
+import com.baidu.mapapi.search.sug.SuggestionSearch;
+import com.baidu.mapapi.search.sug.SuggestionSearchOption;
 import com.hkc.adapter.WayAdapter;
 
-public class WayActivity extends AppCompatActivity implements View.OnClickListener{
+import java.util.ArrayList;
+
+public class WayActivity extends AppCompatActivity implements View.OnClickListener, OnGetSuggestionResultListener, TextWatcher {
     private WayAdapter wayAdapter;
     private ImageView iv_back,iv_car,iv_bus,iv_walk;
     private TextView tv_search;
@@ -28,11 +37,22 @@ public class WayActivity extends AppCompatActivity implements View.OnClickListen
     private final int MODE_CAR = 1;
     private final int MODE_BUS = 2;
     private final int MODE_WALK = 3;
+    //记录出发地的标志，0为我的位置，1为其他位置
+    private int flag = -1;
+    //建议搜索模块
+    private SuggestionSearch mSuggestionSearch;
+    private ArrayList<String> suggest;
+    private ArrayAdapter<String> sugAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_way);
+
+        // 初始化建议搜索模块，注册建议搜索事件监听
+        mSuggestionSearch = SuggestionSearch.newInstance();
+        mSuggestionSearch.setOnGetSuggestionResultListener(this);
 
         iv_back = (ImageView) findViewById(R.id.id_main_way_iv_back);
         iv_car = (ImageView) findViewById(R.id.id_main_way_car);
@@ -43,6 +63,9 @@ public class WayActivity extends AppCompatActivity implements View.OnClickListen
         iv_change = (ImageView) findViewById(R.id.id_main_way_change);
         wayAdapter = new WayAdapter(this);
         act_mylocation = (AutoCompleteTextView) findViewById(R.id.id_way_act_myposition);
+
+        act_destination.addTextChangedListener(this);
+        act_mylocation.addTextChangedListener(this);
 
 
         iv_back.setOnClickListener(this);
@@ -76,16 +99,20 @@ public class WayActivity extends AppCompatActivity implements View.OnClickListen
                 String stNode = null;
                 LatLng myLoc_LatLng = null;
 
+                //终点为空
                 if( TextUtils.isEmpty(enNode) ){
                     Toast.makeText(WayActivity.this, "请输入有效地址", Toast.LENGTH_SHORT).show();
                     return;
                 }
+                //起点为空，或者为我的位置
                 if( TextUtils.isEmpty(myLocStr) || TextUtils.equals(myLocStr,"我的位置")){
-                    myLoc_LatLng = MainActivity.currentLatLng;
+                    flag = 0 ;
 //                    Log.i(TAG, "myLoc_LatLng:" + myLoc_LatLng);
                 }
+                //起点不为空，且为有效地址
                 if(!TextUtils.isEmpty(myLocStr) && !TextUtils.equals(myLocStr,"我的位置")){
                     stNode = myLocStr;
+                    flag = 1;
 //                    Log.i(TAG, "stNode: " + stNode);
                 }
 
@@ -105,7 +132,7 @@ public class WayActivity extends AppCompatActivity implements View.OnClickListen
 
                 Intent intent_WayToRouteplan = new Intent(this,RouteplanActivity.class);
                 intent_WayToRouteplan.putExtra("stNode",stNode);
-                intent_WayToRouteplan.putExtra("myLoc_LatLng",myLoc_LatLng);
+                intent_WayToRouteplan.putExtra("flag",flag);
                 intent_WayToRouteplan.putExtra("enNode",enNode);
                 intent_WayToRouteplan.putExtra("MODE_search",MODE_search);
 
@@ -156,12 +183,42 @@ public class WayActivity extends AppCompatActivity implements View.OnClickListen
         }
     }
 
-    //判断我的位置stNode 是否为“我的位置”
-    public boolean isMyLocation(String stNode){
-        if(stNode.equals("我的位置")){
-            return true;
-        }else {
-            return false;
+
+    @Override
+    public void onGetSuggestionResult(SuggestionResult suggestionResult) {
+        if (suggestionResult == null || suggestionResult.getAllSuggestions() == null) {
+            return;
         }
+        suggest = new ArrayList<String>();
+        for (SuggestionResult.SuggestionInfo info : suggestionResult.getAllSuggestions()) {
+            if (info.key != null) {
+                suggest.add(info.key);
+            }
+        }
+        sugAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, suggest);
+        act_mylocation.setAdapter(sugAdapter);
+        act_destination.setAdapter(sugAdapter);
+        sugAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+    }
+
+    @Override
+    public void onTextChanged(CharSequence s, int start, int before, int count) {
+        if (s.length() <= 0) {
+            return;
+        }
+        //使用建议搜索服务获取建议列表，结果在onSuggestionResult()中更新
+        mSuggestionSearch
+                .requestSuggestion((new SuggestionSearchOption())
+                        .keyword(s.toString()).city(MainActivity.currentCity));
+    }
+
+    @Override
+    public void afterTextChanged(Editable s) {
+
     }
 }

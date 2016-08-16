@@ -77,9 +77,6 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         mSuggestionSearch = SuggestionSearch.newInstance();
         mSuggestionSearch.setOnGetSuggestionResultListener(this);
 
-//        //从Main传来的当前城市
-//        Intent intent_SearchFromMain = getIntent();
-//        currentCity = intent_SearchFromMain.getStringExtra("currentCity");
 
         lv = (ListView) findViewById(R.id.id_search_lv);
         search_adapter = new Search_Adapter();
@@ -138,17 +135,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                 }else {
                     Toast.makeText(this, "地址不能为空", Toast.LENGTH_SHORT).show();
                 }
-//                if(TextUtils.isEmpty(search_content)){
-//                    Toast.makeText(SearchActivity.this, "请输入有效地址", Toast.LENGTH_SHORT).show();
-//                }else {
-//                    geoCoder = GeoCoder.newInstance();
-//                    geoCoder.setOnGetGeoCodeResultListener(this);
-//
-//                    //正向解析（地址-->坐标）
-//                    //Log.e("-----", MainActivity.currentAddress.city);
-////                    geoCoder.geocode(new GeoCodeOption().city(MainActivity.currentAddress.city).address(search_content));
-//                    geoCoder.geocode(new GeoCodeOption().city(currentCity).address(search_content));
-//                }
+
                 break;
             //返回
             case R.id.id_search_back:
@@ -159,37 +146,6 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     }
 
 
-//    @Override
-//    public void onGetGeoCodeResult(GeoCodeResult geoCodeResult) {
-//        if (geoCodeResult == null || geoCodeResult.error != SearchResult.ERRORNO.NO_ERROR) {
-//            Toast.makeText(this, "抱歉，未能找到结果", Toast.LENGTH_LONG)
-//                    .show();
-//            return;
-//        }
-//        /*mBaiduMap.clear();
-//        mBaiduMap.addOverlay(new MarkerOptions().position(result.getLocation())
-//                .icon(BitmapDescriptorFactory
-//                        .fromResource(R.drawable.icon_marka)));
-//        mBaiduMap.setMapStatus(MapStatusUpdateFactory.newLatLng(result
-//                .getLocation()));
-//        String strInfo = String.format("纬度：%f 经度：%f",
-//                result.getLocation().latitude, result.getLocation().longitude);
-//        Toast.makeText(GeoCoderDemo.this, strInfo, Toast.LENGTH_LONG).show();*/
-//
-//        LatLng latLng = new LatLng(geoCodeResult.getLocation().latitude,geoCodeResult.getLocation().longitude);
-//        Intent intent = this.getIntent();
-//        Bundle bundle = new Bundle();
-//        bundle.putParcelable("position",latLng);
-//        intent.putExtras(bundle);
-//        this.setResult(resultCode_SearchToMain,intent);
-//        this.finish();
-//    }
-//
-//    @Override
-//    public void onGetReverseGeoCodeResult(ReverseGeoCodeResult reverseGeoCodeResult) {
-//
-//
-//    }
 
 
     //自动补全搜索栏返回的结果
@@ -233,6 +189,8 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     public void onGetPoiIndoorResult(PoiIndoorResult poiIndoorResult) {
 
     }
+
+
 
     @Override
     protected void onDestroy() {
