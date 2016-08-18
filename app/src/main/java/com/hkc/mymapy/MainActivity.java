@@ -1,6 +1,7 @@
 package com.hkc.mymapy;
 
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 
 import com.baidu.location.BDLocation;
@@ -9,16 +10,14 @@ import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,12 +38,9 @@ import com.baidu.mapapi.search.poi.PoiDetailSearchOption;
 import com.baidu.mapapi.search.poi.PoiResult;
 import com.baidu.mapapi.search.poi.PoiSearch;
 import com.hkc.adapter.Vp_AddressInfo_Adapter;
-import com.hkc.fragment.Fragment_popup1;
 import com.hkc.listener.MyOritationListener;
-import com.hkc.utitls.PoiOverlay;
+import com.hkc.overlay.PoiOverlay;
 import com.hkc.utitls.ScreenUtils;
-
-import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, ViewPager.OnPageChangeListener {
@@ -230,8 +226,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         baiduMap.setMapStatus(mapStatusUpdate);
     }
 
+
+    private ProgressDialog dialog = null;
+
     //开启定位
     public void startLocation() {
+
+        dialog = ProgressDialog.show(this,null,"加载中...");
+
         locationMode = MyLocationConfiguration.LocationMode.NORMAL;
         locationClient = new LocationClient(this);
         myLocationListener = new MyLocationListener();
@@ -385,6 +387,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 baiduMap.animateMapStatus(mapStatusUpdate);
                 isFirstIn = false;
             }
+
+            if(dialog!=null){
+                dialog.dismiss();
+            }
+
         }
     }
 

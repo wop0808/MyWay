@@ -1,15 +1,21 @@
 package com.hkc.mymapy;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.os.Message;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.VelocityTracker;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
+import android.widget.Scroller;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,6 +32,7 @@ import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.search.core.RouteLine;
 import com.baidu.mapapi.search.core.SearchResult;
 import com.baidu.mapapi.search.route.BikingRouteResult;
 import com.baidu.mapapi.search.route.DrivingRoutePlanOption;
@@ -35,10 +42,29 @@ import com.baidu.mapapi.search.route.PlanNode;
 import com.baidu.mapapi.search.route.RoutePlanSearch;
 import com.baidu.mapapi.search.route.TransitRouteResult;
 import com.baidu.mapapi.search.route.WalkingRouteResult;
+import com.hkc.handler.Handler_Route_CurrentLatLng;
 import com.hkc.listener.MyOritationListener;
+import com.hkc.listener.OnGetCurrentLalngListener;
+import com.hkc.overlay.DrivingRouteOverlay;
+import com.hkc.overlay.OverlayManager;
 import com.hkc.utitls.ScreenUtils;
+import com.hkc.view.DriverRouteLinePlan;
 
-public class RouteplanActivity extends AppCompatActivity implements View.OnClickListener, OnGetRoutePlanResultListener {
+/**
+ * DrivingPolicy出行规划
+ * ECAR_AVOID_JAM
+ 驾车策略： 躲避拥堵
+ ECAR_DIS_FIRST
+ 驾乘检索策略常量：最短距离
+ ECAR_FEE_FIRST
+ 驾乘检索策略常量：较少费用
+ ECAR_TIME_FIRST
+ 驾乘检索策略常量：时间优先
+
+ * RouteLine获取耗时、路线长度、路线名称
+ */
+
+public class RouteplanActivity extends AppCompatActivity implements View.OnClickListener, OnGetRoutePlanResultListener, OnGetCurrentLalngListener {
     private final String TAG = "crazyK";
     //路况按钮
     private TextView tv_lukuang;
@@ -76,13 +102,16 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
     private String enNodeStr;
 
     //导航栏三个出行方式 控件
-    private ImageView iv_car,iv_bus,iv_walk;
+    private ImageView iv_car, iv_bus, iv_walk;
     //路线计划搜索相关
     private RoutePlanSearch routePlanSearch;
     //搜索结果中间变脸
-    private DrivingRouteResult nowResultd;
+    private DrivingRouteResult nowResultD;
+    //路线、覆盖物相关
+    private RouteLine routeLine = null;
+    private OverlayManager routeOverlay = null;
 
-
+    private LinearLayout ll_routePlanContent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,9 +120,11 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
 
         Intent intent_RouteFromWay = getIntent();
         Mode_Search = intent_RouteFromWay.getIntExtra("MODE_search", -1);
-        flag = intent_RouteFromWay.getIntExtra("flag",-1);
+        flag = intent_RouteFromWay.getIntExtra("flag", -1);
         stNodeStr = intent_RouteFromWay.getStringExtra("stNode");
         enNodeStr = intent_RouteFromWay.getStringExtra("enNode");
+
+
 
         // 初始化搜索模块，注册事件监听
         routePlanSearch = RoutePlanSearch.newInstance();
@@ -104,69 +135,8 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
         initMapRelate();
 
 
-
     }
 
-    //判断出行方式，并且设置上方导航栏的select属性
-    //在定位相关中 获取currentLatlng后调用
-    //判断出行方式MODE_search，出发地址flag、stNode，终止地址enNode
-    //三种出行状态MODE_search: car：1 bus：2 walk：3 ,出发地的标志flag，0为我的位置，1为其他位置
-    //flag = 0 时，stNode为null；flag = 1时 ，stNode为地址名称
-    /**
-     * 代码逻辑仍然有问题，不能支持自动全国搜索
-     * */
-    public void whichWay(int Mode_Search,int flag,String stNodeStr ,String enNodeStr){
-       //获得终点enNode
-        PlanNode enNode = PlanNode.withCityNameAndPlaceName("成都",enNodeStr);
-        Log.i(TAG, "调用whichWay: ");
-        switch (Mode_Search){
-            //car出行
-            case 1:
-                iv_car.setSelected(true);
-                iv_bus.setSelected(false);
-                iv_walk.setSelected(false);
-                if(flag == 0 ){
-
-                    PlanNode stNode = PlanNode.withLocation(currentLatLng);
-                    routePlanSearch.drivingSearch((new DrivingRoutePlanOption()).from(stNode).to(enNode));
-                    Log.i(TAG, "car出行,我的位置");
-                }else if(flag == 1){
-                    Log.i(TAG, "car出行,不是我的位置");
-                    if(stNodeStr == null){
-                        Toast.makeText(RouteplanActivity.this, "开始地点stNode为空", Toast.LENGTH_SHORT).show();
-                        return;
-                    }else {
-                        PlanNode stNode = PlanNode.withCityNameAndPlaceName("成都",enNodeStr);
-                        routePlanSearch.drivingSearch(new DrivingRoutePlanOption().from(stNode).to(enNode));
-                    }
-
-                }
-
-                break;
-            //bus出行
-            case 2:
-                iv_car.setSelected(false);
-                iv_bus.setSelected(true);
-                iv_walk.setSelected(false);
-                if(flag == 0 ){
-                    Log.i(TAG, "bus出行");
-                }
-                break;
-            //walk出行
-            case 3:
-                iv_car.setSelected(false);
-                iv_bus.setSelected(true);
-                iv_walk.setSelected(false);
-                if(flag == 0 ){
-                    Log.i(TAG, "walk出行");
-                }
-                break;
-            //出行方式传值错误
-            case -1:
-                Log.i(TAG, "Mode_Search = -1 ");
-                break;
-        }
-    }
 
     //四种出行返回结果 onGetTransitRouteResult为公交
     @Override
@@ -193,16 +163,40 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
         }
         if (drivingRouteResult.error == SearchResult.ERRORNO.NO_ERROR) {
 //            nodeIndex = -1;
-            Log.i(TAG, "开始驾车路线查询");
+//            Log.i(TAG, "开始驾车路线查询" + drivingRouteResult.getRouteLines().size());
 
 
-            if (drivingRouteResult.getRouteLines().size() > 1 ) {
-                nowResultd = drivingRouteResult;
+            if (drivingRouteResult.getRouteLines().size() > 1) {
+                nowResultD = drivingRouteResult;
+                Log.i(TAG, "路线个数："+drivingRouteResult.getRouteLines().size());
 
-                String title = drivingRouteResult.getRouteLines().get(0).getTitle();
-                String title1 = drivingRouteResult.getRouteLines().get(0).getStarting().getTitle();
-                Log.i(TAG, "title =  "+title +"\n" +"起点title"+ title1);
+                ll_routePlanContent.removeAllViews();
+                ll_routePlanContent.setWeightSum(drivingRouteResult.getRouteLines().size());
 
+                for (int i = 0; i < drivingRouteResult.getRouteLines().size(); i++) {
+                    routeLine = drivingRouteResult.getRouteLines().get(i);
+
+                    DrivingRouteOverlay overlay = new DrivingRouteOverlay(baiduMap);
+                    routeOverlay = overlay;
+                    baiduMap.setOnMarkerClickListener(overlay);
+                    overlay.setData(drivingRouteResult.getRouteLines().get(i));
+                    overlay.addToMap();
+                    overlay.zoomToSpan();
+
+                    Log.i(TAG, "Distance:"+routeLine.getDistance()+" ,Title:" + routeLine.getTitle() + " ,Time:"+ routeLine.getDuration());
+
+                    //动态添加路线推荐layout
+                    DriverRouteLinePlan driverRouteLinePlan = new DriverRouteLinePlan(this);
+                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,1);
+                    driverRouteLinePlan.setLayoutParams(layoutParams);
+                    driverRouteLinePlan.setBackgroundColor(Color.WHITE);
+                    driverRouteLinePlan.setId(i);
+                    driverRouteLinePlan.setOnClickListener(this);
+                    driverRouteLinePlan.setDistance(routeLine.getDistance());
+                    driverRouteLinePlan.setType(routeLine.getTitle()+"");
+                    driverRouteLinePlan.setTime(routeLine.getDuration());
+                    ll_routePlanContent.addView(driverRouteLinePlan);
+                }
 //                MyTransitDlg myTransitDlg = new MyTransitDlg(RoutePlanDemo.this,
 //                        result.getRouteLines(),
 //                        RouteLineAdapter.Type.DRIVING_ROUTE);
@@ -220,17 +214,16 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
 //                });
 //                myTransitDlg.show();
 
-            } /*else if ( result.getRouteLines().size() == 1 ) {
-                route = result.getRouteLines().get(0);
-                DrivingRouteOverlay overlay = new MyDrivingRouteOverlay(mBaidumap);
+            } else if ( drivingRouteResult.getRouteLines().size() == 1 ) {
+                routeLine = drivingRouteResult.getRouteLines().get(0);
+
+                DrivingRouteOverlay overlay = new DrivingRouteOverlay(baiduMap);
                 routeOverlay = overlay;
-                mBaidumap.setOnMarkerClickListener(overlay);
-                overlay.setData(result.getRouteLines().get(0));
+                baiduMap.setOnMarkerClickListener(overlay);
+                overlay.setData(drivingRouteResult.getRouteLines().get(0));
                 overlay.addToMap();
                 overlay.zoomToSpan();
-                mBtnPre.setVisibility(View.VISIBLE);
-                mBtnNext.setVisibility(View.VISIBLE);
-            }*/
+            }
 
         }
     }
@@ -258,6 +251,8 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
         iv_car = (ImageView) findViewById(R.id.id_routeplan_way_car);
         iv_bus = (ImageView) findViewById(R.id.id_routeplan_way_bus);
         iv_walk = (ImageView) findViewById(R.id.id_routeplan_way_walk);
+
+        ll_routePlanContent = (LinearLayout) findViewById(R.id.id_routeplan_ll_buttom_info);
     }
 
     public void initPopWindow() {
@@ -295,7 +290,7 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
     }
 
     //初始化 地图定位相关 ，方向传感器
-    public void initMapRelate(){
+    public void initMapRelate() {
         locationMode = MyLocationConfiguration.LocationMode.NORMAL;
         locationClient = new LocationClient(this);
         myLocationListener = new MyLocationListener();
@@ -319,16 +314,81 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
         });
 
         //开始导航
-        whichWay(this.Mode_Search, this.flag,this.stNodeStr,this.enNodeStr);
-
-
+        whichWay(this.Mode_Search);
 
     }
 
 
+    //判断出行方式，并且设置上方导航栏的select属性
+    public void whichWay(int Mode_Search) {
+        switch (Mode_Search) {
+            //car出行
+            case 1:
+                iv_car.setSelected(true);
+                iv_bus.setSelected(false);
+                iv_walk.setSelected(false);
+                break;
+            case 2:
+                iv_car.setSelected(false);
+                iv_bus.setSelected(true);
+                iv_walk.setSelected(false);
+                break;
+            case 3:
+                iv_car.setSelected(false);
+                iv_bus.setSelected(false);
+                iv_walk.setSelected(true);
+                break;
+            default:
+                Log.i(TAG, "出行方式Mode_Search错误");
+                break;
+        }
+    }
+
+    //接口回调 获得currentLatLng后，开始路线查询
+    //在定位相关中 获取currentLatlng后调用
+    //判断出行方式MODE_search，出发地址flag、stNode，终止地址enNode
+    //三种出行状态MODE_search: car：1 bus：2 walk：3 ,出发地的标志flag，0为我的位置，1为其他位置
+    //flag = 0 时，stNode为null；flag = 1时 ，stNode为地址名称
+    /**
+     * 代码逻辑仍然有问题，不能支持自动全国搜索
+     */
+    @Override
+    public void startSearch(LatLng currentLatLng) {
+        this.currentLatLng = currentLatLng;
+        //获得终点enNode
+        PlanNode enNode = PlanNode.withCityNameAndPlaceName("成都",this.enNodeStr);
+        //car出行
+        if(iv_car.isSelected()){
+            if(flag == 0 ){
+                PlanNode stNode = PlanNode.withLocation(currentLatLng);
+                routePlanSearch.drivingSearch((new DrivingRoutePlanOption()).from(stNode).to(enNode));
+                Log.i(TAG, "car出行,我的位置");
+            }else if(flag == 1){
+                Log.i(TAG, "car出行,不是我的位置");
+                if(stNodeStr == null){
+                    Toast.makeText(RouteplanActivity.this, "开始地点stNode为空", Toast.LENGTH_SHORT).show();
+                    return;
+                }else {
+                    PlanNode stNode = PlanNode.withCityNameAndPlaceName("成都",enNodeStr);
+                    routePlanSearch.drivingSearch(new DrivingRoutePlanOption().from(stNode).to(enNode));
+                }
+            }
+
+        }else if(iv_bus.isSelected()){//bus出行
+
+        }else if(iv_walk.isSelected()){//步行
+
+        }
+    }
 
 
     private class MyLocationListener implements BDLocationListener {
+        private Handler_Route_CurrentLatLng handler_Route_CurrentLatLng;
+
+        public MyLocationListener() {
+            handler_Route_CurrentLatLng = new Handler_Route_CurrentLatLng(RouteplanActivity.this);
+        }
+
         @Override
         public void onReceiveLocation(BDLocation bdLocation) {
             MyLocationData myLocationData = new MyLocationData.Builder()
@@ -342,16 +402,19 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
             MyLocationConfiguration configuration = new MyLocationConfiguration(locationMode, true, iconLocation);
             baiduMap.setMyLocationConfigeration(configuration);
 
-            currentLatLng = new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude());
+            LatLng currentLatLng = new LatLng(bdLocation.getLatitude(), bdLocation.getLongitude());
 
+            //将currentLatLng传给主线程
+            Message message = handler_Route_CurrentLatLng.obtainMessage(1);
+            message.obj = currentLatLng;
+            handler_Route_CurrentLatLng.sendMessage(message);
         }
-
-
     }
+
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             //标准地图
             case R.id.id_main_tv_changemap_biaozhun:
                 tv_changemap_biaozhun.setSelected(true);
@@ -398,7 +461,19 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
             case R.id.id_routeplan_find:
                 locationMode = MyLocationConfiguration.LocationMode.NORMAL;
                 centerToMyLocation(currentLatLng);
-                Log.i(TAG, "currentLatLng: "+currentLatLng);
+//                Log.i(TAG, "currentLatLng: "+currentLatLng);
+                break;
+            //路线计划1
+            case 0:
+                Toast.makeText(RouteplanActivity.this, "路线计划1", Toast.LENGTH_SHORT).show();
+                break;
+            //路线计划2
+            case 1:
+                Toast.makeText(RouteplanActivity.this, "路线计划2", Toast.LENGTH_SHORT).show();
+                break;
+            //路线计划3
+            case 2:
+                Toast.makeText(RouteplanActivity.this, "路线计划3", Toast.LENGTH_SHORT).show();
                 break;
 
         }

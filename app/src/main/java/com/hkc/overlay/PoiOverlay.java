@@ -1,23 +1,8 @@
-package com.hkc.utitls;
+package com.hkc.overlay;
 
 /**
  * Created by Administrator on 2016/8/3.
  */
-
-import android.os.Bundle;
-
-import com.baidu.mapapi.map.BaiduMap;
-import com.baidu.mapapi.map.BitmapDescriptorFactory;
-import com.baidu.mapapi.map.Marker;
-import com.baidu.mapapi.map.MarkerOptions;
-import com.baidu.mapapi.map.OverlayOptions;
-import com.baidu.mapapi.map.Polyline;
-import com.baidu.mapapi.search.poi.PoiResult;
-
-import java.util.ArrayList;
-import java.util.List;
-
-
 
 import android.os.Bundle;
 
