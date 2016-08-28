@@ -8,6 +8,8 @@ import android.widget.TextView;
 
 import com.hkc.mymapy.R;
 
+import java.text.DecimalFormat;
+
 /**
  * Created by Administrator on 2016/8/17.
  */
@@ -30,12 +32,16 @@ public class DriverRouteLinePlan extends LinearLayout {
 
     public void setTime(int time) {
         //TODO 将毫秒时间转换成便于阅读的时间
-        tv_time.setText(time + "分钟");
+        int minute = time/60;
+        tv_time.setText(minute + "分钟");
     }
 
     public void setDistance(float distance) {
         //TODO 将路程转换成公里数
-        tv_distance.setText(distance + "公里");
+        DecimalFormat decimalFormat = new DecimalFormat("0.00");
+        float kilometer = distance/1000;
+        String formatKilometer = decimalFormat.format(kilometer);
+        tv_distance.setText(formatKilometer + "公里");
     }
 
 

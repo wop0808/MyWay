@@ -54,12 +54,10 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     private GeoCoder geoCoder;
     //建议搜索模块
     private SuggestionSearch mSuggestionSearch;
+    private PoiSearch mPoiSearch;
     private ArrayList<String> suggest;
     private ArrayAdapter<String> sugAdapter;
-    private PoiSearch mPoiSearch;
 
-//    //从Main传来的当前城市
-//    String currentCity;
 
     private ListView lv;
     private Search_Adapter search_adapter;

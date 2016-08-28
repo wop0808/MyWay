@@ -34,6 +34,12 @@ import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.search.core.RouteLine;
 import com.baidu.mapapi.search.core.SearchResult;
+import com.baidu.mapapi.search.poi.OnGetPoiSearchResultListener;
+import com.baidu.mapapi.search.poi.PoiCitySearchOption;
+import com.baidu.mapapi.search.poi.PoiDetailResult;
+import com.baidu.mapapi.search.poi.PoiIndoorResult;
+import com.baidu.mapapi.search.poi.PoiResult;
+import com.baidu.mapapi.search.poi.PoiSearch;
 import com.baidu.mapapi.search.route.BikingRouteResult;
 import com.baidu.mapapi.search.route.DrivingRoutePlanOption;
 import com.baidu.mapapi.search.route.DrivingRouteResult;
@@ -64,7 +70,7 @@ import com.hkc.view.DriverRouteLinePlan;
  * RouteLine获取耗时、路线长度、路线名称
  */
 
-public class RouteplanActivity extends AppCompatActivity implements View.OnClickListener, OnGetRoutePlanResultListener, OnGetCurrentLalngListener {
+public class RouteplanActivity extends AppCompatActivity implements View.OnClickListener, OnGetRoutePlanResultListener, OnGetCurrentLalngListener, OnGetPoiSearchResultListener {
     private final String TAG = "crazyK";
     //路况按钮
     private TextView tv_lukuang;
@@ -105,13 +111,16 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
     private ImageView iv_car, iv_bus, iv_walk;
     //路线计划搜索相关
     private RoutePlanSearch routePlanSearch;
-    //搜索结果中间变脸
-    private DrivingRouteResult nowResultD;
+    //搜索结果中间变量
+    private DrivingRouteResult nowResult;
     //路线、覆盖物相关
     private RouteLine routeLine = null;
     private OverlayManager routeOverlay = null;
-
+    //下方动态添加控件相关
     private LinearLayout ll_routePlanContent;
+    private DriverRouteLinePlan driverRouteLinePlan;
+    //当搜索结果有问题时使用的poi搜索
+    private PoiSearch mPoiSearch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -158,6 +167,19 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
         if (drivingRouteResult.error == SearchResult.ERRORNO.AMBIGUOUS_ROURE_ADDR) {
             // 起终点或途经点地址有岐义，通过以下接口获取建议查询信息
             // result.getSuggestAddrInfo()
+//            LatLng startLocation = drivingRouteResult.getSuggestAddrInfo().getSuggestStartNode().get(0).location;
+//            LatLng endLocation = drivingRouteResult.getSuggestAddrInfo().getSuggestEndNode().get(0).location;
+//            PlanNode stNode = PlanNode.withLocation(startLocation);
+//            PlanNode enNode = PlanNode.withLocation(endLocation);
+//            routePlanSearch.drivingSearch((new DrivingRoutePlanOption()).from(stNode).to(enNode));
+            if(mPoiSearch == null){
+                // 初始化搜索模块，注册搜索事件监听
+                mPoiSearch = PoiSearch.newInstance();
+                mPoiSearch.setOnGetPoiSearchResultListener(this);
+            }else {
+                mPoiSearch.searchInCity(new PoiCitySearchOption().city().keyword())
+            }
+
             Log.i(TAG, "起终点或途经点地址有岐义，通过以下接口获取建议查询信息: ");
             return;
         }
@@ -167,33 +189,33 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
 
 
             if (drivingRouteResult.getRouteLines().size() > 1) {
-                nowResultD = drivingRouteResult;
+                this.nowResult = drivingRouteResult;
                 Log.i(TAG, "路线个数："+drivingRouteResult.getRouteLines().size());
 
                 ll_routePlanContent.removeAllViews();
                 ll_routePlanContent.setWeightSum(drivingRouteResult.getRouteLines().size());
 
+                DrivingRouteOverlay overlay = new DrivingRouteOverlay(baiduMap);
+                routeOverlay = overlay;
+                baiduMap.setOnMarkerClickListener(overlay);
+                overlay.setData(drivingRouteResult.getRouteLines().get(0));
+                overlay.addToMap();
+                overlay.zoomToSpan();
+
                 for (int i = 0; i < drivingRouteResult.getRouteLines().size(); i++) {
                     routeLine = drivingRouteResult.getRouteLines().get(i);
 
-                    DrivingRouteOverlay overlay = new DrivingRouteOverlay(baiduMap);
-                    routeOverlay = overlay;
-                    baiduMap.setOnMarkerClickListener(overlay);
-                    overlay.setData(drivingRouteResult.getRouteLines().get(i));
-                    overlay.addToMap();
-                    overlay.zoomToSpan();
 
-                    Log.i(TAG, "Distance:"+routeLine.getDistance()+" ,Title:" + routeLine.getTitle() + " ,Time:"+ routeLine.getDuration());
 
                     //动态添加路线推荐layout
-                    DriverRouteLinePlan driverRouteLinePlan = new DriverRouteLinePlan(this);
+                    driverRouteLinePlan = new DriverRouteLinePlan(this);
                     LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,1);
                     driverRouteLinePlan.setLayoutParams(layoutParams);
                     driverRouteLinePlan.setBackgroundColor(Color.WHITE);
                     driverRouteLinePlan.setId(i);
                     driverRouteLinePlan.setOnClickListener(this);
                     driverRouteLinePlan.setDistance(routeLine.getDistance());
-                    driverRouteLinePlan.setType(routeLine.getTitle()+"");
+                    driverRouteLinePlan.setType("方案"+(i+1));
                     driverRouteLinePlan.setTime(routeLine.getDuration());
                     ll_routePlanContent.addView(driverRouteLinePlan);
                 }
@@ -362,9 +384,9 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
             if(flag == 0 ){
                 PlanNode stNode = PlanNode.withLocation(currentLatLng);
                 routePlanSearch.drivingSearch((new DrivingRoutePlanOption()).from(stNode).to(enNode));
-                Log.i(TAG, "car出行,我的位置");
+//                Log.i(TAG, "car出行,我的位置");
             }else if(flag == 1){
-                Log.i(TAG, "car出行,不是我的位置");
+//                Log.i(TAG, "car出行,不是我的位置");
                 if(stNodeStr == null){
                     Toast.makeText(RouteplanActivity.this, "开始地点stNode为空", Toast.LENGTH_SHORT).show();
                     return;
@@ -379,6 +401,22 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
         }else if(iv_walk.isSelected()){//步行
 
         }
+    }
+
+    //poi搜索接口的三个接口
+    @Override
+    public void onGetPoiResult(PoiResult poiResult) {
+
+    }
+
+    @Override
+    public void onGetPoiDetailResult(PoiDetailResult poiDetailResult) {
+
+    }
+
+    @Override
+    public void onGetPoiIndoorResult(PoiIndoorResult poiIndoorResult) {
+
     }
 
 
@@ -465,14 +503,35 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
                 break;
             //路线计划1
             case 0:
+                DrivingRouteOverlay overlay0 = new DrivingRouteOverlay(baiduMap);
+                routeOverlay = overlay0;
+                baiduMap.setOnMarkerClickListener(overlay0);
+                overlay0.setData(this.nowResult.getRouteLines().get(0));
+                baiduMap.clear();
+                overlay0.addToMap();
+                overlay0.zoomToSpan();
                 Toast.makeText(RouteplanActivity.this, "路线计划1", Toast.LENGTH_SHORT).show();
                 break;
             //路线计划2
             case 1:
+                DrivingRouteOverlay overlay1 = new DrivingRouteOverlay(baiduMap);
+                routeOverlay = overlay1;
+                baiduMap.setOnMarkerClickListener(overlay1);
+                overlay1.setData(this.nowResult.getRouteLines().get(1));
+                baiduMap.clear();
+                overlay1.addToMap();
+                overlay1.zoomToSpan();
                 Toast.makeText(RouteplanActivity.this, "路线计划2", Toast.LENGTH_SHORT).show();
                 break;
             //路线计划3
             case 2:
+                DrivingRouteOverlay overlay2 = new DrivingRouteOverlay(baiduMap);
+                routeOverlay = overlay2;
+                baiduMap.setOnMarkerClickListener(overlay2);
+                overlay2.setData(this.nowResult.getRouteLines().get(2));
+                baiduMap.clear();
+                overlay2.addToMap();
+                overlay2.zoomToSpan();
                 Toast.makeText(RouteplanActivity.this, "路线计划3", Toast.LENGTH_SHORT).show();
                 break;
 
