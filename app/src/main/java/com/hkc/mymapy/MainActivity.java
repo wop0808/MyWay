@@ -403,6 +403,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             rl_vp.setVisibility(View.GONE);
         }
         if (requestCode == 1 && resultCode == 1) {
+            ProgressDialog progressDialog = ProgressDialog.show(this,null,"数据加载中");
             poiResult = data.getParcelableExtra("poiResult");
 //            Log.i(TAG, poiResult.toString());
             baiduMap.clear();
@@ -419,6 +420,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
             }
             vp_addressInfo_adapter.setPoiResult(poiResult);
+            progressDialog.dismiss();
 //            Toast.makeText(this,"新搜索",Toast.LENGTH_SHORT).show();
 
 

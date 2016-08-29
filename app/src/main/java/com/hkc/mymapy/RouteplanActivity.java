@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Message;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
@@ -32,11 +33,13 @@ import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.search.core.PoiInfo;
 import com.baidu.mapapi.search.core.RouteLine;
 import com.baidu.mapapi.search.core.SearchResult;
 import com.baidu.mapapi.search.poi.OnGetPoiSearchResultListener;
 import com.baidu.mapapi.search.poi.PoiCitySearchOption;
 import com.baidu.mapapi.search.poi.PoiDetailResult;
+import com.baidu.mapapi.search.poi.PoiDetailSearchOption;
 import com.baidu.mapapi.search.poi.PoiIndoorResult;
 import com.baidu.mapapi.search.poi.PoiResult;
 import com.baidu.mapapi.search.poi.PoiSearch;
@@ -46,13 +49,17 @@ import com.baidu.mapapi.search.route.DrivingRouteResult;
 import com.baidu.mapapi.search.route.OnGetRoutePlanResultListener;
 import com.baidu.mapapi.search.route.PlanNode;
 import com.baidu.mapapi.search.route.RoutePlanSearch;
+import com.baidu.mapapi.search.route.TransitRoutePlanOption;
 import com.baidu.mapapi.search.route.TransitRouteResult;
+import com.baidu.mapapi.search.route.WalkingRoutePlanOption;
 import com.baidu.mapapi.search.route.WalkingRouteResult;
+import com.hkc.adapter.Vp_AddressInfo_Adapter;
 import com.hkc.handler.Handler_Route_CurrentLatLng;
 import com.hkc.listener.MyOritationListener;
 import com.hkc.listener.OnGetCurrentLalngListener;
 import com.hkc.overlay.DrivingRouteOverlay;
 import com.hkc.overlay.OverlayManager;
+import com.hkc.overlay.PoiOverlay;
 import com.hkc.utitls.ScreenUtils;
 import com.hkc.view.DriverRouteLinePlan;
 
@@ -70,7 +77,7 @@ import com.hkc.view.DriverRouteLinePlan;
  * RouteLine获取耗时、路线长度、路线名称
  */
 
-public class RouteplanActivity extends AppCompatActivity implements View.OnClickListener, OnGetRoutePlanResultListener, OnGetCurrentLalngListener, OnGetPoiSearchResultListener {
+public class RouteplanActivity extends AppCompatActivity implements View.OnClickListener, OnGetRoutePlanResultListener, OnGetCurrentLalngListener, OnGetPoiSearchResultListener, ViewPager.OnPageChangeListener {
     private final String TAG = "crazyK";
     //路况按钮
     private TextView tv_lukuang;
@@ -93,6 +100,7 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
     private MyLocationListener myLocationListener;
     //当前位置
     private LatLng currentLatLng;
+    private String currentCity;
     //模式切换
     private MyLocationConfiguration.LocationMode locationMode;
     //当前位置
@@ -119,8 +127,18 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
     //下方动态添加控件相关
     private LinearLayout ll_routePlanContent;
     private DriverRouteLinePlan driverRouteLinePlan;
-    //当搜索结果有问题时使用的poi搜索
+    //当搜索结果有问题时使用的poi搜索及相关
+    private RelativeLayout rl_vp;
+    private ViewPager vp_addressInfo;
+    private Vp_AddressInfo_Adapter vp_addressInfo_adapter;
     private PoiSearch mPoiSearch;
+    private PoiResult poiResult;
+    private ImageView iv_daohang;
+    //点击搜索结果marker 以及 滑动viewpager时获得的poiInfo
+    private PoiInfo poiInfo_FromMarkerAndVp;
+    //poi搜索后获得的终点坐标
+    private LatLng endLatLng;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,10 +148,8 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
         Intent intent_RouteFromWay = getIntent();
         Mode_Search = intent_RouteFromWay.getIntExtra("MODE_search", -1);
         flag = intent_RouteFromWay.getIntExtra("flag", -1);
-        stNodeStr = intent_RouteFromWay.getStringExtra("stNode");
-        enNodeStr = intent_RouteFromWay.getStringExtra("enNode");
-
-
+        stNodeStr = intent_RouteFromWay.getStringExtra("stNodeStr");
+        enNodeStr = intent_RouteFromWay.getStringExtra("enNodeStr");
 
         // 初始化搜索模块，注册事件监听
         routePlanSearch = RoutePlanSearch.newInstance();
@@ -162,7 +178,16 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
     public void onGetDrivingRouteResult(DrivingRouteResult drivingRouteResult) {
         Log.i(TAG, "onGetDrivingRouteResult: ");
         if (drivingRouteResult == null || drivingRouteResult.error != SearchResult.ERRORNO.NO_ERROR) {
-            Toast.makeText(RouteplanActivity.this, "抱歉，未找到结果", Toast.LENGTH_SHORT).show();
+            Toast.makeText(RouteplanActivity.this, "位置坐标不明确，请重新选择位置", Toast.LENGTH_LONG).show();
+            if(mPoiSearch == null){
+                // 初始化搜索模块，注册搜索事件监听
+                mPoiSearch = PoiSearch.newInstance();
+                mPoiSearch.setOnGetPoiSearchResultListener(this);
+                mPoiSearch.searchInCity(new PoiCitySearchOption().city(currentCity).keyword(enNodeStr).pageNum(0));
+            }else {
+                mPoiSearch.searchInCity(new PoiCitySearchOption().city(currentCity).keyword(enNodeStr).pageNum(0));
+            }
+
         }
         if (drivingRouteResult.error == SearchResult.ERRORNO.AMBIGUOUS_ROURE_ADDR) {
             // 起终点或途经点地址有岐义，通过以下接口获取建议查询信息
@@ -172,13 +197,6 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
 //            PlanNode stNode = PlanNode.withLocation(startLocation);
 //            PlanNode enNode = PlanNode.withLocation(endLocation);
 //            routePlanSearch.drivingSearch((new DrivingRoutePlanOption()).from(stNode).to(enNode));
-            if(mPoiSearch == null){
-                // 初始化搜索模块，注册搜索事件监听
-                mPoiSearch = PoiSearch.newInstance();
-                mPoiSearch.setOnGetPoiSearchResultListener(this);
-            }else {
-                mPoiSearch.searchInCity(new PoiCitySearchOption().city().keyword())
-            }
 
             Log.i(TAG, "起终点或途经点地址有岐义，通过以下接口获取建议查询信息: ");
             return;
@@ -275,6 +293,10 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
         iv_walk = (ImageView) findViewById(R.id.id_routeplan_way_walk);
 
         ll_routePlanContent = (LinearLayout) findViewById(R.id.id_routeplan_ll_buttom_info);
+
+        rl_vp = (RelativeLayout) findViewById(R.id.id_routeplan_rl_vp);
+        vp_addressInfo = (ViewPager) findViewById(R.id.id_routeplan_viewpager_addressinfo);
+        iv_daohang = (ImageView) findViewById(R.id.id_routeplan_popupwindow_marker_iv_daohang);
     }
 
     public void initPopWindow() {
@@ -303,6 +325,10 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
         iv_car.setOnClickListener(this);
         iv_bus.setOnClickListener(this);
         iv_walk.setOnClickListener(this);
+
+        iv_daohang.setOnClickListener(this);
+
+        vp_addressInfo.setOnPageChangeListener(this);
     }
 
     //回到中心位置
@@ -349,16 +375,19 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
                 iv_car.setSelected(true);
                 iv_bus.setSelected(false);
                 iv_walk.setSelected(false);
+                iv_daohang.setImageResource(R.mipmap.popupwindow_car_daohang);
                 break;
             case 2:
                 iv_car.setSelected(false);
                 iv_bus.setSelected(true);
                 iv_walk.setSelected(false);
+                iv_daohang.setImageResource(R.mipmap.popupwindow_daohang);
                 break;
             case 3:
                 iv_car.setSelected(false);
                 iv_bus.setSelected(false);
                 iv_walk.setSelected(true);
+                iv_daohang.setImageResource(R.mipmap.popupwindow_walk_daohang);
                 break;
             default:
                 Log.i(TAG, "出行方式Mode_Search错误");
@@ -406,7 +435,21 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
     //poi搜索接口的三个接口
     @Override
     public void onGetPoiResult(PoiResult poiResult) {
+        this.poiResult = poiResult;
+        baiduMap.clear();
+        PoiOverlay overlay_FromSearch = new MyPoiOverlay(baiduMap);
+        baiduMap.setOnMarkerClickListener(overlay_FromSearch);
+        overlay_FromSearch.setData(poiResult);
+        overlay_FromSearch.addToMap();
+        overlay_FromSearch.zoomToSpan();
 
+        //蛟神黑科技 将activityi获得的数据-->adapter -->fragment
+        //避免了控件在onCreateView方法还未执行完时，对控件进行操作，爆出空指针异常
+        if (vp_addressInfo.getAdapter() == null) {
+            vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(fragmentManager);
+            vp_addressInfo.setAdapter(vp_addressInfo_adapter);
+        }
+        vp_addressInfo_adapter.setPoiResult(poiResult);
     }
 
     @Override
@@ -416,6 +459,25 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
 
     @Override
     public void onGetPoiIndoorResult(PoiIndoorResult poiIndoorResult) {
+
+    }
+
+
+    //viewpager的三个监听回调
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+    }
+
+    @Override
+    public void onPageSelected(int position) {
+        poiInfo_FromMarkerAndVp = poiResult.getAllPoi().get(position);
+//        endLatLng = poiInfo_FromMarkerAndVp.location;
+        centerToMyLocation(poiInfo_FromMarkerAndVp.location);
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
 
     }
 
@@ -436,6 +498,8 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
                     .longitude(bdLocation.getLongitude()).build();
 
             baiduMap.setMyLocationData(myLocationData);
+
+            currentCity = bdLocation.getCity();
             //设置自定义图标
             MyLocationConfiguration configuration = new MyLocationConfiguration(locationMode, true, iconLocation);
             baiduMap.setMyLocationConfigeration(configuration);
@@ -534,7 +598,57 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
                 overlay2.zoomToSpan();
                 Toast.makeText(RouteplanActivity.this, "路线计划3", Toast.LENGTH_SHORT).show();
                 break;
+            //poi搜索后导航按钮被点击
+            case R.id.id_routeplan_popupwindow_marker_iv_daohang:
+                PlanNode stNode_Poi = PlanNode.withLocation(currentLatLng);
+                PlanNode enNode_Poi = PlanNode.withLocation(endLatLng);
+                if(iv_car.isSelected()){
+                    routePlanSearch.drivingSearch((new DrivingRoutePlanOption()).from(stNode_Poi).to(enNode_Poi));
+                }else if(iv_daohang.isSelected()){
+                    routePlanSearch.transitSearch((new TransitRoutePlanOption()).from(stNode_Poi).to(enNode_Poi));
+                }else if(iv_walk.isSelected()){
+                    routePlanSearch.walkingSearch((new WalkingRoutePlanOption()).from(stNode_Poi).to(enNode_Poi));
+                }
+                if(rl_vp.getVisibility() == View.VISIBLE){
+                    rl_vp.setVisibility(View.GONE);
+                }
+                break;
 
+        }
+    }
+
+    //工具类PoiOverlay的自定义子类
+    public class MyPoiOverlay extends PoiOverlay {
+
+        public MyPoiOverlay(BaiduMap baiduMap) {
+            super(baiduMap);
+        }
+
+        //点击查询结果覆盖物的监听
+        @Override
+        public boolean onPoiClick(int index) {
+            super.onPoiClick(index);
+            poiInfo_FromMarkerAndVp = getPoiResult().getAllPoi().get(index);
+            //获得终点坐标，导航用
+            endLatLng = poiInfo_FromMarkerAndVp.location;
+
+            if (mPoiSearch == null){
+                mPoiSearch = PoiSearch.newInstance();
+            }
+            centerToMyLocation(poiInfo_FromMarkerAndVp.location);
+
+            if(rl_vp.getVisibility() == View.GONE){
+                rl_vp.setVisibility(View.VISIBLE);
+            }
+
+            mapView.showZoomControls(false);
+
+            vp_addressInfo.setCurrentItem(index, true);
+
+            mPoiSearch.searchPoiDetail((new PoiDetailSearchOption())
+                    .poiUid(poiInfo_FromMarkerAndVp.uid));
+            // }
+            return true;
         }
     }
 
@@ -567,6 +681,9 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
         super.onDestroy();
         //在activity执行onDestroy时执行mMapView.onDestroy()，实现地图生命周期管理
         mapView.onDestroy();
+        if(mPoiSearch != null){
+            mPoiSearch.destroy();
+        }
 
     }
 

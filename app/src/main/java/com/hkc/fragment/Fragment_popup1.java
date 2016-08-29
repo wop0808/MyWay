@@ -40,6 +40,7 @@ public class Fragment_popup1 extends Fragment {
     public void setInfo(PoiInfo poiInfo) {
         tv_addressinfo.setText(poiInfo.address+"");
 //        tv_destince.setText(poiResult.getAllPoi().get(position).);
+        // TODO: 2016/8/29 距离数据没找到
         tv_location.setText(poiInfo.name+"");
     }
 }

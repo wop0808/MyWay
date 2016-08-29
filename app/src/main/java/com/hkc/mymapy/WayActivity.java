@@ -95,12 +95,12 @@ public class WayActivity extends AppCompatActivity implements View.OnClickListen
                 int MODE_search = 0;
                 //获取我的位置：stNode, 终点位置：enNode
                 String myLocStr = act_mylocation.getText().toString().trim();
-                String enNode = act_destination.getText().toString().trim();
-                String stNode = null;
+                String enNodeStr = act_destination.getText().toString().trim();
+                String stNodeStr = null;
                 LatLng myLoc_LatLng = null;
 
                 //终点为空
-                if( TextUtils.isEmpty(enNode) ){
+                if( TextUtils.isEmpty(enNodeStr) ){
                     Toast.makeText(WayActivity.this, "请输入有效地址", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -111,7 +111,7 @@ public class WayActivity extends AppCompatActivity implements View.OnClickListen
                 }
                 //起点不为空，且为有效地址
                 if(!TextUtils.isEmpty(myLocStr) && !TextUtils.equals(myLocStr,"我的位置")){
-                    stNode = myLocStr;
+                    stNodeStr = myLocStr;
                     flag = 1;
 //                    Log.i(TAG, "stNode: " + stNode);
                 }
@@ -131,9 +131,9 @@ public class WayActivity extends AppCompatActivity implements View.OnClickListen
 
 
                 Intent intent_WayToRouteplan = new Intent(this,RouteplanActivity.class);
-                intent_WayToRouteplan.putExtra("stNode",stNode);
+                intent_WayToRouteplan.putExtra("stNodeStr",stNodeStr);
                 intent_WayToRouteplan.putExtra("flag",flag);
-                intent_WayToRouteplan.putExtra("enNode",enNode);
+                intent_WayToRouteplan.putExtra("enNodeStr",enNodeStr);
                 intent_WayToRouteplan.putExtra("MODE_search",MODE_search);
 
                 startActivity(intent_WayToRouteplan);

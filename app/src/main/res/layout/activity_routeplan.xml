@@ -29,54 +29,60 @@
                     android:layout_height="wrap_content"
                     android:src="@mipmap/near_pic_comeback" />
             </LinearLayout>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="140"
                 android:orientation="horizontal">
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center">
+
                     <ImageView
                         android:id="@+id/id_routeplan_way_car"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/way_car"/>
+                        android:src="@drawable/way_car" />
                 </LinearLayout>
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center">
+
                     <ImageView
                         android:id="@+id/id_routeplan_way_bus"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/way_gongjiao"/>
+                        android:src="@drawable/way_gongjiao" />
                 </LinearLayout>
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center">
+
                     <ImageView
                         android:id="@+id/id_routeplan_way_walk"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/way_walk"/>
+                        android:src="@drawable/way_walk" />
                 </LinearLayout>
             </LinearLayout>
 
 
             <LinearLayout
-                android:orientation="vertical"
                 android:id="@+id/id_main_way_search"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="650">
-            </LinearLayout>
+                android:layout_weight="650"
+                android:orientation="vertical"></LinearLayout>
         </LinearLayout>
     </LinearLayout>
 
@@ -86,11 +92,11 @@
         android:layout_height="match_parent"
         android:layout_above="@+id/id_routeplan_ll_buttom_info"
         android:layout_below="@id/id_routeplan_ll_top">
+
         <com.baidu.mapapi.map.MapView
             android:id="@+id/id_routeplan_mapview"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-        </com.baidu.mapapi.map.MapView>
+            android:layout_height="match_parent"></com.baidu.mapapi.map.MapView>
 
         <ImageView
             android:id="@+id/id_routeplan_changemap"
@@ -135,7 +141,31 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:orientation="horizontal"/>
+        android:orientation="horizontal" />
 
+
+    <RelativeLayout
+        android:id="@+id/id_routeplan_rl_vp"
+        android:layout_width="match_parent"
+        android:layout_height="90dp"
+        android:layout_alignParentBottom="true"
+        android:visibility="gone">
+
+        <android.support.v4.view.ViewPager
+            android:id="@+id/id_routeplan_viewpager_addressinfo"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_alignTop="@+id/id_routeplan_popupwindow_marker_iv_daohang"
+            android:layout_marginTop="30dp"
+            android:background="@android:color/white" />
+
+        <ImageView
+            android:id="@+id/id_routeplan_popupwindow_marker_iv_daohang"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="20dp"
+            android:src="@mipmap/popupwindow_daohang" />
+    </RelativeLayout>
 
 </RelativeLayout>
