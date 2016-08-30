@@ -177,7 +177,7 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
     @Override
     public void onGetDrivingRouteResult(DrivingRouteResult drivingRouteResult) {
         Log.i(TAG, "onGetDrivingRouteResult: ");
-        if (drivingRouteResult == null || drivingRouteResult.error != SearchResult.ERRORNO.NO_ERROR) {
+        if (drivingRouteResult == null || drivingRouteResult.error != SearchResult.ERRORNO.NO_ERROR||drivingRouteResult.error == SearchResult.ERRORNO.AMBIGUOUS_ROURE_ADDR) {
             Toast.makeText(RouteplanActivity.this, "位置坐标不明确，请重新选择位置", Toast.LENGTH_LONG).show();
             if(mPoiSearch == null){
                 // 初始化搜索模块，注册搜索事件监听
@@ -189,18 +189,13 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
             }
 
         }
-        if (drivingRouteResult.error == SearchResult.ERRORNO.AMBIGUOUS_ROURE_ADDR) {
-            // 起终点或途经点地址有岐义，通过以下接口获取建议查询信息
-            // result.getSuggestAddrInfo()
-//            LatLng startLocation = drivingRouteResult.getSuggestAddrInfo().getSuggestStartNode().get(0).location;
-//            LatLng endLocation = drivingRouteResult.getSuggestAddrInfo().getSuggestEndNode().get(0).location;
-//            PlanNode stNode = PlanNode.withLocation(startLocation);
-//            PlanNode enNode = PlanNode.withLocation(endLocation);
-//            routePlanSearch.drivingSearch((new DrivingRoutePlanOption()).from(stNode).to(enNode));
-
-            Log.i(TAG, "起终点或途经点地址有岐义，通过以下接口获取建议查询信息: ");
-            return;
-        }
+//        if (drivingRouteResult.error == SearchResult.ERRORNO.AMBIGUOUS_ROURE_ADDR) {
+//            // 起终点或途经点地址有岐义，通过以下接口获取建议查询信息
+//            // result.getSuggestAddrInfo()
+//
+//            Log.i(TAG, "起终点或途经点地址有岐义，通过以下接口获取建议查询信息: ");
+//            return;
+//        }
         if (drivingRouteResult.error == SearchResult.ERRORNO.NO_ERROR) {
 //            nodeIndex = -1;
 //            Log.i(TAG, "开始驾车路线查询" + drivingRouteResult.getRouteLines().size());
@@ -211,8 +206,8 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
                 Log.i(TAG, "路线个数："+drivingRouteResult.getRouteLines().size());
 
                 ll_routePlanContent.removeAllViews();
-                ll_routePlanContent.setWeightSum(drivingRouteResult.getRouteLines().size());
 
+                ll_routePlanContent.setWeightSum(drivingRouteResult.getRouteLines().size());
                 DrivingRouteOverlay overlay = new DrivingRouteOverlay(baiduMap);
                 routeOverlay = overlay;
                 baiduMap.setOnMarkerClickListener(overlay);
@@ -223,10 +218,9 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
                 for (int i = 0; i < drivingRouteResult.getRouteLines().size(); i++) {
                     routeLine = drivingRouteResult.getRouteLines().get(i);
 
-
-
                     //动态添加路线推荐layout
                     driverRouteLinePlan = new DriverRouteLinePlan(this);
+                    driverRouteLinePlan.setPadding(0,7,0,7);
                     LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,1);
                     driverRouteLinePlan.setLayoutParams(layoutParams);
                     driverRouteLinePlan.setBackgroundColor(Color.WHITE);
@@ -404,10 +398,11 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
      * 代码逻辑仍然有问题，不能支持自动全国搜索
      */
     @Override
-    public void startSearch(LatLng currentLatLng) {
-        this.currentLatLng = currentLatLng;
+    public void startSearch(BDLocation bdLocation) {
+        this.currentLatLng = new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude());
+
         //获得终点enNode
-        PlanNode enNode = PlanNode.withCityNameAndPlaceName("成都",this.enNodeStr);
+        PlanNode enNode = PlanNode.withCityNameAndPlaceName(bdLocation.getCity(),this.enNodeStr);
         //car出行
         if(iv_car.isSelected()){
             if(flag == 0 ){
@@ -504,11 +499,9 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
             MyLocationConfiguration configuration = new MyLocationConfiguration(locationMode, true, iconLocation);
             baiduMap.setMyLocationConfigeration(configuration);
 
-            LatLng currentLatLng = new LatLng(bdLocation.getLatitude(), bdLocation.getLongitude());
-
             //将currentLatLng传给主线程
             Message message = handler_Route_CurrentLatLng.obtainMessage(1);
-            message.obj = currentLatLng;
+            message.obj = bdLocation;
             handler_Route_CurrentLatLng.sendMessage(message);
         }
     }
@@ -574,7 +567,6 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
                 baiduMap.clear();
                 overlay0.addToMap();
                 overlay0.zoomToSpan();
-                Toast.makeText(RouteplanActivity.this, "路线计划1", Toast.LENGTH_SHORT).show();
                 break;
             //路线计划2
             case 1:
@@ -585,7 +577,6 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
                 baiduMap.clear();
                 overlay1.addToMap();
                 overlay1.zoomToSpan();
-                Toast.makeText(RouteplanActivity.this, "路线计划2", Toast.LENGTH_SHORT).show();
                 break;
             //路线计划3
             case 2:
@@ -596,7 +587,6 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
                 baiduMap.clear();
                 overlay2.addToMap();
                 overlay2.zoomToSpan();
-                Toast.makeText(RouteplanActivity.this, "路线计划3", Toast.LENGTH_SHORT).show();
                 break;
             //poi搜索后导航按钮被点击
             case R.id.id_routeplan_popupwindow_marker_iv_daohang:
