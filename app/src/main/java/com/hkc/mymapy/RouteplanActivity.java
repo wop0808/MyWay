@@ -1,7 +1,10 @@
 package com.hkc.mymapy;
 
+import android.annotation.TargetApi;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
 import android.support.v4.app.FragmentManager;
@@ -12,6 +15,7 @@ import android.view.Gravity;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
@@ -60,6 +64,7 @@ import com.hkc.listener.OnGetCurrentLalngListener;
 import com.hkc.overlay.DrivingRouteOverlay;
 import com.hkc.overlay.OverlayManager;
 import com.hkc.overlay.PoiOverlay;
+import com.hkc.overlay.WalkingRouteOverlay;
 import com.hkc.utitls.ScreenUtils;
 import com.hkc.view.DriverRouteLinePlan;
 
@@ -120,12 +125,13 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
     //路线计划搜索相关
     private RoutePlanSearch routePlanSearch;
     //搜索结果中间变量
-    private DrivingRouteResult nowResult;
+    private SearchResult nowResult;
     //路线、覆盖物相关
     private RouteLine routeLine = null;
     private OverlayManager routeOverlay = null;
     //下方动态添加控件相关
     private LinearLayout ll_routePlanContent;
+    private LinearLayout ll_startDaoHang;
     private DriverRouteLinePlan driverRouteLinePlan;
     //当搜索结果有问题时使用的poi搜索及相关
     private RelativeLayout rl_vp;
@@ -138,6 +144,10 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
     private PoiInfo poiInfo_FromMarkerAndVp;
     //poi搜索后获得的终点坐标
     private LatLng endLatLng;
+    //神奇的ProgressDialog
+    ProgressDialog progressDialog;
+    //由上个way界面传过来的终点Str 通过PlanNode.withCityNameAndPlaceName(bdLocation.getCity(),this.enNodeStr)转化为的终点地址
+    private PlanNode enNode;
 
 
     @Override
@@ -145,8 +155,10 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_routeplan);
 
+        progressDialog = ProgressDialog.show(this,null,"数据加载中");
+
         Intent intent_RouteFromWay = getIntent();
-        Mode_Search = intent_RouteFromWay.getIntExtra("MODE_search", -1);
+        Mode_Search = intent_RouteFromWay.getIntExtra("MODE_search", 0);
         flag = intent_RouteFromWay.getIntExtra("flag", -1);
         stNodeStr = intent_RouteFromWay.getStringExtra("stNodeStr");
         enNodeStr = intent_RouteFromWay.getStringExtra("enNodeStr");
@@ -164,19 +176,138 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
 
 
     //四种出行返回结果 onGetTransitRouteResult为公交
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     @Override
     public void onGetWalkingRouteResult(WalkingRouteResult walkingRouteResult) {
-        Log.i(TAG, "onGetWalkingRouteResult: ");
+        baiduMap.clear();
+        ll_routePlanContent.removeAllViews();
+        ll_startDaoHang.removeAllViews();
+        if (walkingRouteResult == null || walkingRouteResult.error != SearchResult.ERRORNO.NO_ERROR||walkingRouteResult.error == SearchResult.ERRORNO.AMBIGUOUS_ROURE_ADDR) {
+            Toast.makeText(RouteplanActivity.this, "位置坐标不明确，请重新选择位置", Toast.LENGTH_LONG).show();
+            if(mPoiSearch == null){
+                // 初始化搜索模块，注册搜索事件监听
+                mPoiSearch = PoiSearch.newInstance();
+                mPoiSearch.setOnGetPoiSearchResultListener(this);
+                mPoiSearch.searchInCity(new PoiCitySearchOption().city(currentCity).keyword(enNodeStr).pageNum(0));
+            }else {
+                mPoiSearch.searchInCity(new PoiCitySearchOption().city(currentCity).keyword(enNodeStr).pageNum(0));
+            }
+        }
+
+        if (walkingRouteResult.error == SearchResult.ERRORNO.NO_ERROR) {
+            if (walkingRouteResult.getRouteLines().size() > 1) {
+                this.nowResult = walkingRouteResult;
+//                Log.i(TAG, "路线个数："+drivingRouteResult.getRouteLines().size());
+
+//                ll_routePlanContent.removeAllViews();
+//                ll_startDaoHang.removeAllViews();
+
+                ll_routePlanContent.setWeightSum(walkingRouteResult.getRouteLines().size());
+                WalkingRouteOverlay overlay = new WalkingRouteOverlay(baiduMap);
+                routeOverlay = overlay;
+                baiduMap.setOnMarkerClickListener(overlay);
+                overlay.setData(walkingRouteResult.getRouteLines().get(0));
+                overlay.addToMap();
+                overlay.zoomToSpan();
+
+                for (int i = 0; i < walkingRouteResult.getRouteLines().size(); i++) {
+                    routeLine = walkingRouteResult.getRouteLines().get(i);
+
+                    //动态添加路线推荐layout
+                    driverRouteLinePlan = new DriverRouteLinePlan(this);
+                    driverRouteLinePlan.setPadding(0,7,0,7);
+                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,1);
+                    driverRouteLinePlan.setLayoutParams(layoutParams);
+                    driverRouteLinePlan.setBackgroundColor(Color.WHITE);
+                    driverRouteLinePlan.setId(i);
+                    driverRouteLinePlan.setOnClickListener(this);
+                    driverRouteLinePlan.setDistance(routeLine.getDistance());
+                    driverRouteLinePlan.setType("方案"+(i+1));
+                    driverRouteLinePlan.setTime(routeLine.getDuration());
+                    ll_routePlanContent.addView(driverRouteLinePlan);
+                }
+
+                Button btn_startDaoHang = new Button(this);
+                btn_startDaoHang.setBackground(getResources().getDrawable(R.mipmap.routeplan_daohang));
+                btn_startDaoHang.setId(R.id.button_bin_navi);
+                btn_startDaoHang.setOnClickListener(this);
+                ll_startDaoHang.setPadding(10,10,10,10);
+                ll_startDaoHang.addView(btn_startDaoHang);
+
+
+
+            } else if ( walkingRouteResult.getRouteLines().size() == 1 ) {
+//                Log.i(TAG, "线路等于1");
+                routeLine = walkingRouteResult.getRouteLines().get(0);
+
+                WalkingRouteOverlay overlay = new WalkingRouteOverlay(baiduMap);
+                routeOverlay = overlay;
+                baiduMap.setOnMarkerClickListener(overlay);
+                overlay.setData(walkingRouteResult.getRouteLines().get(0));
+                overlay.addToMap();
+                overlay.zoomToSpan();
+
+                Button btn_startDaoHang = new Button(this);
+                btn_startDaoHang.setBackground(getResources().getDrawable(R.mipmap.routeplan_daohang));
+                btn_startDaoHang.setId(R.id.button_bin_navi);
+                btn_startDaoHang.setOnClickListener(this);
+                ll_startDaoHang.setPadding(10,10,10,10);
+                ll_startDaoHang.addView(btn_startDaoHang);
+            }
+
+        }
+
     }
 
+
+    /**
+     * transitRouteResult.getRouteLines().get(0).getDuration();
+     transitRouteResult.getRouteLines().get(0).getTitle();
+     transitRouteResult.getRouteLines().get(0).getDistance();
+     transitRouteResult.getRouteLines().get(0).getStarting().getTitle();
+     transitRouteResult.getRouteLines().get(0).getStarting().getLocation();
+     transitRouteResult.getRouteLines().get(0).getTerminal().getTitle();
+     transitRouteResult.getRouteLines().get(0).getTerminal().getLocation();
+
+     double latitude = transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getWayPoints().get(0).latitude;
+     transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getEntrance().getTitle();
+     transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getEntrance().getLocation();
+     transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getExit().getTitle();
+     transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getExit().getLocation();
+     transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getInstructions();
+     transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getStepType();
+     transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getVehicleInfo().getTitle();
+     transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getVehicleInfo().getPassStationNum();
+     transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getVehicleInfo().getTotalPrice();
+     transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getVehicleInfo().getZonePrice();
+     *
+     * */
     @Override
     public void onGetTransitRouteResult(TransitRouteResult transitRouteResult) {
-        Log.i(TAG, "onGetTransitRouteResult: ");
+        baiduMap.clear();
+        ll_routePlanContent.removeAllViews();
+        ll_startDaoHang.removeAllViews();
+        Log.i(TAG, "transitRouteResult: " +transitRouteResult.toString());
+//        Log.i(TAG, "getStarting().getTitle(): " +transitRouteResult.getRouteLines().get(0).getStarting().getTitle());//神马都没有
+//        Log.i(TAG, "getVehicleInfo().getTitle(): " +transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getVehicleInfo().getTitle()+"" );  //空
+//        Log.i(TAG, "getVehicleInfo().getPassStationNum(): " +transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getVehicleInfo().getPassStationNum()+"");//空
+//        Log.i(TAG, "getVehicleInfo().getTotalPrice(): " +transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getVehicleInfo().getTotalPrice()+"");//空
+//        Log.i(TAG, "getVehicleInfo().getZonePrice(): " +transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getVehicleInfo().getZonePrice()+"");//空
+        Log.i(TAG, "getTitle(): " +transitRouteResult.getRouteLines().get(0).getTitle()+"");//神马都没有
+        Log.i(TAG, "getStarting().getTitle(): " +transitRouteResult.getRouteLines().get(0).getStarting().getTitle()+"");
+        Log.i(TAG, "getInstructions(): " +transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getInstructions()+"");
+        Log.i(TAG, "getStepType: "+transitRouteResult.getRouteLines().get(0).getAllStep().get(1).getStepType().name()+"");
+
+
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     @Override
     public void onGetDrivingRouteResult(DrivingRouteResult drivingRouteResult) {
-        Log.i(TAG, "onGetDrivingRouteResult: ");
+        baiduMap.clear();
+        ll_routePlanContent.removeAllViews();
+        ll_startDaoHang.removeAllViews();
+//        Log.i(TAG, "onGetDrivingRouteResult: ");
         if (drivingRouteResult == null || drivingRouteResult.error != SearchResult.ERRORNO.NO_ERROR||drivingRouteResult.error == SearchResult.ERRORNO.AMBIGUOUS_ROURE_ADDR) {
             Toast.makeText(RouteplanActivity.this, "位置坐标不明确，请重新选择位置", Toast.LENGTH_LONG).show();
             if(mPoiSearch == null){
@@ -187,25 +318,14 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
             }else {
                 mPoiSearch.searchInCity(new PoiCitySearchOption().city(currentCity).keyword(enNodeStr).pageNum(0));
             }
-
         }
-//        if (drivingRouteResult.error == SearchResult.ERRORNO.AMBIGUOUS_ROURE_ADDR) {
-//            // 起终点或途经点地址有岐义，通过以下接口获取建议查询信息
-//            // result.getSuggestAddrInfo()
-//
-//            Log.i(TAG, "起终点或途经点地址有岐义，通过以下接口获取建议查询信息: ");
-//            return;
-//        }
         if (drivingRouteResult.error == SearchResult.ERRORNO.NO_ERROR) {
-//            nodeIndex = -1;
-//            Log.i(TAG, "开始驾车路线查询" + drivingRouteResult.getRouteLines().size());
-
-
             if (drivingRouteResult.getRouteLines().size() > 1) {
                 this.nowResult = drivingRouteResult;
-                Log.i(TAG, "路线个数："+drivingRouteResult.getRouteLines().size());
-
-                ll_routePlanContent.removeAllViews();
+//                Log.i(TAG, "路线个数："+drivingRouteResult.getRouteLines().size());
+//
+//                ll_routePlanContent.removeAllViews();
+//                ll_startDaoHang.removeAllViews();
 
                 ll_routePlanContent.setWeightSum(drivingRouteResult.getRouteLines().size());
                 DrivingRouteOverlay overlay = new DrivingRouteOverlay(baiduMap);
@@ -231,24 +351,18 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
                     driverRouteLinePlan.setTime(routeLine.getDuration());
                     ll_routePlanContent.addView(driverRouteLinePlan);
                 }
-//                MyTransitDlg myTransitDlg = new MyTransitDlg(RoutePlanDemo.this,
-//                        result.getRouteLines(),
-//                        RouteLineAdapter.Type.DRIVING_ROUTE);
-//                myTransitDlg.setOnItemInDlgClickLinster(new OnItemInDlgClickListener() {
-//                    public void onItemClick(int position) {
-//                        route = nowResultd.getRouteLines().get(position);
-//                        DrivingRouteOverlay overlay = new MyDrivingRouteOverlay(mBaidumap);
-//                        mBaidumap.setOnMarkerClickListener(overlay);
-//                        routeOverlay = overlay;
-//                        overlay.setData(nowResultd.getRouteLines().get(position));
-//                        overlay.addToMap();
-//                        overlay.zoomToSpan();
-//                    }
-//
-//                });
-//                myTransitDlg.show();
+
+                Button btn_startDaoHang = new Button(this);
+                btn_startDaoHang.setBackground(getResources().getDrawable(R.mipmap.routeplan_daohang));
+                btn_startDaoHang.setId(R.id.button_bin_navi);
+                btn_startDaoHang.setOnClickListener(this);
+                ll_startDaoHang.setPadding(10,10,10,10);
+                ll_startDaoHang.addView(btn_startDaoHang);
+
+
 
             } else if ( drivingRouteResult.getRouteLines().size() == 1 ) {
+//                Log.i(TAG, "线路等于1");
                 routeLine = drivingRouteResult.getRouteLines().get(0);
 
                 DrivingRouteOverlay overlay = new DrivingRouteOverlay(baiduMap);
@@ -257,6 +371,13 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
                 overlay.setData(drivingRouteResult.getRouteLines().get(0));
                 overlay.addToMap();
                 overlay.zoomToSpan();
+
+                Button btn_startDaoHang = new Button(this);
+                btn_startDaoHang.setBackground(getResources().getDrawable(R.mipmap.routeplan_daohang));
+                btn_startDaoHang.setId(R.id.button_bin_navi);
+                btn_startDaoHang.setOnClickListener(this);
+                ll_startDaoHang.setPadding(10,10,10,10);
+                ll_startDaoHang.addView(btn_startDaoHang);
             }
 
         }
@@ -286,7 +407,8 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
         iv_bus = (ImageView) findViewById(R.id.id_routeplan_way_bus);
         iv_walk = (ImageView) findViewById(R.id.id_routeplan_way_walk);
 
-        ll_routePlanContent = (LinearLayout) findViewById(R.id.id_routeplan_ll_buttom_info);
+        ll_routePlanContent = (LinearLayout) findViewById(R.id.id_routeplan_ll_typle_daohang);
+        ll_startDaoHang = (LinearLayout) findViewById(R.id.id_routeplan_startdaohang);
 
         rl_vp = (RelativeLayout) findViewById(R.id.id_routeplan_rl_vp);
         vp_addressInfo = (ViewPager) findViewById(R.id.id_routeplan_viewpager_addressinfo);
@@ -333,6 +455,9 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
 
     //初始化 地图定位相关 ，方向传感器
     public void initMapRelate() {
+        //判断导航方式
+        whichWay(this.Mode_Search);
+
         locationMode = MyLocationConfiguration.LocationMode.NORMAL;
         locationClient = new LocationClient(this);
         myLocationListener = new MyLocationListener();
@@ -355,8 +480,7 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
             }
         });
 
-        //开始导航
-        whichWay(this.Mode_Search);
+
 
     }
 
@@ -400,30 +524,57 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
     @Override
     public void startSearch(BDLocation bdLocation) {
         this.currentLatLng = new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude());
+        Log.i(TAG,bdLocation.getLatitude()+"" );
 
         //获得终点enNode
-        PlanNode enNode = PlanNode.withCityNameAndPlaceName(bdLocation.getCity(),this.enNodeStr);
+        enNode = PlanNode.withCityNameAndPlaceName(bdLocation.getCity(),this.enNodeStr);
+
+        if(progressDialog.isShowing()){
+            progressDialog.dismiss();
+        }
+
         //car出行
         if(iv_car.isSelected()){
             if(flag == 0 ){
                 PlanNode stNode = PlanNode.withLocation(currentLatLng);
                 routePlanSearch.drivingSearch((new DrivingRoutePlanOption()).from(stNode).to(enNode));
-//                Log.i(TAG, "car出行,我的位置");
             }else if(flag == 1){
-//                Log.i(TAG, "car出行,不是我的位置");
                 if(stNodeStr == null){
                     Toast.makeText(RouteplanActivity.this, "开始地点stNode为空", Toast.LENGTH_SHORT).show();
                     return;
                 }else {
-                    PlanNode stNode = PlanNode.withCityNameAndPlaceName("成都",enNodeStr);
+                    PlanNode stNode = PlanNode.withCityNameAndPlaceName(bdLocation.getCity(),enNodeStr);
                     routePlanSearch.drivingSearch(new DrivingRoutePlanOption().from(stNode).to(enNode));
                 }
             }
 
         }else if(iv_bus.isSelected()){//bus出行
+            if(flag == 0 ){
+                PlanNode stNode = PlanNode.withLocation(currentLatLng);
+                routePlanSearch.transitSearch((new TransitRoutePlanOption()).from(stNode).city(bdLocation.getCity()).to(enNode));
+            }else if(flag == 1){
+                if(stNodeStr == null){
+                    Toast.makeText(RouteplanActivity.this, "开始地点stNode为空", Toast.LENGTH_SHORT).show();
+                    return;
+                }else {
+                    PlanNode stNode = PlanNode.withCityNameAndPlaceName(bdLocation.getCity(),enNodeStr);
+                    routePlanSearch.transitSearch(new TransitRoutePlanOption().from(stNode).city(bdLocation.getCity()).to(enNode));
+                }
+            }
 
         }else if(iv_walk.isSelected()){//步行
-
+            if(flag == 0 ){
+                PlanNode stNode = PlanNode.withLocation(currentLatLng);
+                routePlanSearch.walkingSearch((new WalkingRoutePlanOption()).from(stNode).to(enNode));
+            }else if(flag == 1){
+                if(stNodeStr == null){
+                    Toast.makeText(RouteplanActivity.this, "开始地点stNode为空", Toast.LENGTH_SHORT).show();
+                    return;
+                }else {
+                    PlanNode stNode = PlanNode.withCityNameAndPlaceName(bdLocation.getCity(),enNodeStr);
+                    routePlanSearch.walkingSearch(new WalkingRoutePlanOption().from(stNode).to(enNode));
+                }
+            }
         }
     }
 
@@ -560,33 +711,94 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
                 break;
             //路线计划1
             case 0:
-                DrivingRouteOverlay overlay0 = new DrivingRouteOverlay(baiduMap);
-                routeOverlay = overlay0;
-                baiduMap.setOnMarkerClickListener(overlay0);
-                overlay0.setData(this.nowResult.getRouteLines().get(0));
-                baiduMap.clear();
-                overlay0.addToMap();
-                overlay0.zoomToSpan();
+                if(iv_car.isSelected()){
+                    DrivingRouteResult drivingRouteResult = (DrivingRouteResult) this.nowResult;
+                    DrivingRouteOverlay overlay0 = new DrivingRouteOverlay(baiduMap);
+                    routeOverlay = overlay0;
+                    baiduMap.setOnMarkerClickListener(overlay0);
+                    overlay0.setData(drivingRouteResult.getRouteLines().get(0));
+                    baiduMap.clear();
+                    overlay0.addToMap();
+                    overlay0.zoomToSpan();
+                }
+                if(iv_walk.isSelected()){
+                    WalkingRouteResult walkingRouteResult = (WalkingRouteResult) this.nowResult;
+                    WalkingRouteOverlay overlay0 = new WalkingRouteOverlay(baiduMap);
+                    routeOverlay = overlay0;
+                    baiduMap.setOnMarkerClickListener(overlay0);
+                    overlay0.setData(walkingRouteResult.getRouteLines().get(0));
+                    baiduMap.clear();
+                    overlay0.addToMap();
+                    overlay0.zoomToSpan();
+                }
+
+//                DrivingRouteOverlay overlay0 = new DrivingRouteOverlay(baiduMap);
+//                routeOverlay = overlay0;
+//                baiduMap.setOnMarkerClickListener(overlay0);
+//                overlay0.setData(this.nowResult.getRouteLines().get(0));
+//                baiduMap.clear();
+//                overlay0.addToMap();
+//                overlay0.zoomToSpan();
                 break;
             //路线计划2
             case 1:
-                DrivingRouteOverlay overlay1 = new DrivingRouteOverlay(baiduMap);
-                routeOverlay = overlay1;
-                baiduMap.setOnMarkerClickListener(overlay1);
-                overlay1.setData(this.nowResult.getRouteLines().get(1));
-                baiduMap.clear();
-                overlay1.addToMap();
-                overlay1.zoomToSpan();
+                if(iv_car.isSelected()){
+                    DrivingRouteResult drivingRouteResult = (DrivingRouteResult) this.nowResult;
+                    DrivingRouteOverlay overlay1 = new DrivingRouteOverlay(baiduMap);
+                    routeOverlay = overlay1;
+                    baiduMap.setOnMarkerClickListener(overlay1);
+                    overlay1.setData(drivingRouteResult.getRouteLines().get(1));
+                    baiduMap.clear();
+                    overlay1.addToMap();
+                    overlay1.zoomToSpan();
+                }
+                if(iv_walk.isSelected()){
+                    WalkingRouteResult walkingRouteResult = (WalkingRouteResult) this.nowResult;
+                    WalkingRouteOverlay overlay0 = new WalkingRouteOverlay(baiduMap);
+                    routeOverlay = overlay0;
+                    baiduMap.setOnMarkerClickListener(overlay0);
+                    overlay0.setData(walkingRouteResult.getRouteLines().get(1));
+                    baiduMap.clear();
+                    overlay0.addToMap();
+                    overlay0.zoomToSpan();
+                }
+//                DrivingRouteOverlay overlay1 = new DrivingRouteOverlay(baiduMap);
+//                routeOverlay = overlay1;
+//                baiduMap.setOnMarkerClickListener(overlay1);
+//                overlay1.setData(this.nowResult.getRouteLines().get(1));
+//                baiduMap.clear();
+//                overlay1.addToMap();
+//                overlay1.zoomToSpan();
                 break;
             //路线计划3
             case 2:
-                DrivingRouteOverlay overlay2 = new DrivingRouteOverlay(baiduMap);
-                routeOverlay = overlay2;
-                baiduMap.setOnMarkerClickListener(overlay2);
-                overlay2.setData(this.nowResult.getRouteLines().get(2));
-                baiduMap.clear();
-                overlay2.addToMap();
-                overlay2.zoomToSpan();
+                if(iv_car.isSelected()){
+                    DrivingRouteResult drivingRouteResult = (DrivingRouteResult) this.nowResult;
+                    DrivingRouteOverlay overlay2 = new DrivingRouteOverlay(baiduMap);
+                    routeOverlay = overlay2;
+                    baiduMap.setOnMarkerClickListener(overlay2);
+                    overlay2.setData(drivingRouteResult.getRouteLines().get(2));
+                    baiduMap.clear();
+                    overlay2.addToMap();
+                    overlay2.zoomToSpan();
+                }
+                if(iv_walk.isSelected()){
+                    WalkingRouteResult walkingRouteResult = (WalkingRouteResult) this.nowResult;
+                    WalkingRouteOverlay overlay0 = new WalkingRouteOverlay(baiduMap);
+                    routeOverlay = overlay0;
+                    baiduMap.setOnMarkerClickListener(overlay0);
+                    overlay0.setData(walkingRouteResult.getRouteLines().get(2));
+                    baiduMap.clear();
+                    overlay0.addToMap();
+                    overlay0.zoomToSpan();
+                }
+//                DrivingRouteOverlay overlay2 = new DrivingRouteOverlay(baiduMap);
+//                routeOverlay = overlay2;
+//                baiduMap.setOnMarkerClickListener(overlay2);
+//                overlay2.setData(this.nowResult.getRouteLines().get(2));
+//                baiduMap.clear();
+//                overlay2.addToMap();
+//                overlay2.zoomToSpan();
                 break;
             //poi搜索后导航按钮被点击
             case R.id.id_routeplan_popupwindow_marker_iv_daohang:
@@ -603,7 +815,79 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
                     rl_vp.setVisibility(View.GONE);
                 }
                 break;
+            //开始导航按钮被点击
+            case R.id.button_bin_navi:
+                Toast.makeText(RouteplanActivity.this, "点击开始导航", Toast.LENGTH_SHORT).show();
+                break;
+            //iv_car驾车图标被点击
+            case R.id.id_routeplan_way_car:
+                if(iv_car.isSelected()){
+                    return;
+                }else {
+                    iv_car.setSelected(true);
+                    iv_bus.setSelected(false);
+                    iv_walk.setSelected(false);
 
+                    if(flag == 0 ){
+                        PlanNode stNode = PlanNode.withLocation(currentLatLng);
+                        routePlanSearch.drivingSearch((new DrivingRoutePlanOption()).from(stNode).to(enNode));
+                    }else if(flag == 1){
+                        if(stNodeStr == null){
+                            Toast.makeText(RouteplanActivity.this, "开始地点stNode为空", Toast.LENGTH_SHORT).show();
+                            return;
+                        }else {
+                            PlanNode stNode = PlanNode.withCityNameAndPlaceName(this.currentCity,enNodeStr);
+                            routePlanSearch.drivingSearch(new DrivingRoutePlanOption().from(stNode).to(enNode));
+                        }
+                    }
+                }
+                break;
+            //iv_bus公交图标被点击：
+            case R.id.id_routeplan_way_bus:
+                if(iv_bus.isSelected()){
+                    return;
+                }else {
+                    iv_car.setSelected(false);
+                    iv_bus.setSelected(true);
+                    iv_walk.setSelected(false);
+
+                    if(flag == 0 ){
+                        PlanNode stNode = PlanNode.withLocation(currentLatLng);
+                        routePlanSearch.transitSearch((new TransitRoutePlanOption()).from(stNode).city(this.currentCity).to(enNode));
+                    }else if(flag == 1){
+                        if(stNodeStr == null){
+                            Toast.makeText(RouteplanActivity.this, "开始地点stNode为空", Toast.LENGTH_SHORT).show();
+                            return;
+                        }else {
+                            PlanNode stNode = PlanNode.withCityNameAndPlaceName(this.currentCity,enNodeStr);
+                            routePlanSearch.transitSearch(new TransitRoutePlanOption().from(stNode).city(this.currentCity).to(enNode));
+                        }
+                    }
+                }
+                break;
+            //iv_walk步行图标被点击：
+            case R.id.id_routeplan_way_walk:
+                if(iv_walk.isSelected()){
+                    return;
+                }else {
+                    iv_car.setSelected(false);
+                    iv_bus.setSelected(false);
+                    iv_walk.setSelected(true);
+
+                    if(flag == 0 ){
+                        PlanNode stNode = PlanNode.withLocation(currentLatLng);
+                        routePlanSearch.walkingSearch((new WalkingRoutePlanOption()).from(stNode).to(enNode));
+                    }else if(flag == 1){
+                        if(stNodeStr == null){
+                            Toast.makeText(RouteplanActivity.this, "开始地点stNode为空", Toast.LENGTH_SHORT).show();
+                            return;
+                        }else {
+                            PlanNode stNode = PlanNode.withCityNameAndPlaceName(this.currentCity,enNodeStr);
+                            routePlanSearch.walkingSearch(new WalkingRoutePlanOption().from(stNode).to(enNode));
+                        }
+                    }
+                }
+                break;
         }
     }
 

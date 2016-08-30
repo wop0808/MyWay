@@ -82,7 +82,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="650"
-                android:orientation="vertical"></LinearLayout>
+                android:orientation="vertical">
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 
@@ -90,13 +91,14 @@
         android:id="@+id/id_routeplan_map"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/id_routeplan_ll_buttom_info"
+        android:layout_above="@+id/id_routeplan_ll_typle_daohang"
         android:layout_below="@id/id_routeplan_ll_top">
 
         <com.baidu.mapapi.map.MapView
             android:id="@+id/id_routeplan_mapview"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"></com.baidu.mapapi.map.MapView>
+            android:layout_height="match_parent">
+        </com.baidu.mapapi.map.MapView>
 
         <ImageView
             android:id="@+id/id_routeplan_changemap"
@@ -136,12 +138,56 @@
             android:src="@mipmap/main_faxian_pic" />
     </RelativeLayout>
 
-    <LinearLayout
-        android:id="@+id/id_routeplan_ll_buttom_info"
+   <!-- <LinearLayout
+        android:id="@+id/id_routeplan_ll_typle_daohang"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:orientation="horizontal" />
+        android:orientation="horizontal">
+
+    </LinearLayout>-->
+        <LinearLayout
+            android:id="@+id/id_routeplan_ll_typle_daohang"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/id_routeplan_startdaohang"
+            android:orientation="horizontal">
+
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/id_routeplan_startdaohang"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:orientation="vertical"
+            android:gravity="center">
+
+        </LinearLayout>
+
+
+    <!--<LinearLayout
+        android:id="@+id/id_routeplan_ll_buttom_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <LinearLayout
+            android:id="@+id/id_routeplan_ll_typle_daohang"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:orientation="horizontal">
+
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/id_routeplan_startdaohang"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+
+        </LinearLayout>
+
+    </LinearLayout>-->
 
 
     <RelativeLayout

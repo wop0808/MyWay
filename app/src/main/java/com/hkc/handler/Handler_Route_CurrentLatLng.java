@@ -26,7 +26,7 @@ public class Handler_Route_CurrentLatLng extends Handler {
             BDLocation bdLocation = (BDLocation) msg.obj;
             onGetCurrentLalngListener.startSearch(bdLocation);
         } else {
-            Log.i(TAG, "mse传输错误 ");
+            Log.i(TAG, "msg传输错误 ");
         }
     }
 }
