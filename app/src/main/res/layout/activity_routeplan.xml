@@ -18,6 +18,7 @@
             android:layout_marginRight="@dimen/main_margin_left_right">
 
             <LinearLayout
+                android:id="@+id/id_routeplan_back"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="610"
@@ -97,8 +98,7 @@
         <com.baidu.mapapi.map.MapView
             android:id="@+id/id_routeplan_mapview"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-        </com.baidu.mapapi.map.MapView>
+            android:layout_height="match_parent"></com.baidu.mapapi.map.MapView>
 
         <ImageView
             android:id="@+id/id_routeplan_changemap"
@@ -138,58 +138,48 @@
             android:src="@mipmap/main_faxian_pic" />
     </RelativeLayout>
 
-   <!-- <LinearLayout
+    <!--用于公交搜索后显示的listview-->
+    <LinearLayout
+        android:id="@+id/id_routeplan_ll_lv_bussearch"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/white"
+        android:orientation="vertical"
+        android:layout_below="@id/id_routeplan_ll_top"
+        android:visibility="gone">
+        <ListView
+            android:id="@+id/id_routeplan_lv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:divider="@color/app_depart_gray"
+            android:dividerHeight="1dp">
+        </ListView>
+
+    </LinearLayout>
+
+
+    <!--用于显示驾车及步行的信息-->
+    <LinearLayout
         android:id="@+id/id_routeplan_ll_typle_daohang"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_above="@+id/id_routeplan_startdaohang"
         android:orientation="horizontal">
 
-    </LinearLayout>-->
-        <LinearLayout
-            android:id="@+id/id_routeplan_ll_typle_daohang"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_above="@+id/id_routeplan_startdaohang"
-            android:orientation="horizontal">
+    </LinearLayout>
 
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/id_routeplan_startdaohang"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:orientation="vertical"
-            android:gravity="center">
-
-        </LinearLayout>
-
-
-    <!--<LinearLayout
-        android:id="@+id/id_routeplan_ll_buttom_info"
+    <!--用于显示开始导航按钮-->
+    <LinearLayout
+        android:id="@+id/id_routeplan_startdaohang"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:gravity="center"
         android:orientation="vertical">
-        <LinearLayout
-            android:id="@+id/id_routeplan_ll_typle_daohang"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:orientation="horizontal">
 
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/id_routeplan_startdaohang"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center">
+    </LinearLayout>
 
-        </LinearLayout>
-
-    </LinearLayout>-->
-
-
+    <!--用于当搜索结果不明确进行poi搜索后，点击poi marker 显示的地址信息-->
     <RelativeLayout
         android:id="@+id/id_routeplan_rl_vp"
         android:layout_width="match_parent"

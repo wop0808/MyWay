@@ -19,7 +19,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text="6分钟"
-        android:textSize="14sp"
+        android:textSize="13sp"
         android:textStyle="bold" />
 
     <TextView

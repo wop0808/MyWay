@@ -10,14 +10,18 @@ import android.os.Message;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.Scroller;
@@ -57,6 +61,7 @@ import com.baidu.mapapi.search.route.TransitRoutePlanOption;
 import com.baidu.mapapi.search.route.TransitRouteResult;
 import com.baidu.mapapi.search.route.WalkingRoutePlanOption;
 import com.baidu.mapapi.search.route.WalkingRouteResult;
+import com.hkc.adapter.RoutePlan_Bus_Adapter;
 import com.hkc.adapter.Vp_AddressInfo_Adapter;
 import com.hkc.handler.Handler_Route_CurrentLatLng;
 import com.hkc.listener.MyOritationListener;
@@ -64,9 +69,12 @@ import com.hkc.listener.OnGetCurrentLalngListener;
 import com.hkc.overlay.DrivingRouteOverlay;
 import com.hkc.overlay.OverlayManager;
 import com.hkc.overlay.PoiOverlay;
+import com.hkc.overlay.TransitRouteOverlay;
 import com.hkc.overlay.WalkingRouteOverlay;
 import com.hkc.utitls.ScreenUtils;
 import com.hkc.view.DriverRouteLinePlan;
+
+import java.util.ArrayList;
 
 /**
  * DrivingPolicy出行规划
@@ -82,13 +90,15 @@ import com.hkc.view.DriverRouteLinePlan;
  * RouteLine获取耗时、路线长度、路线名称
  */
 
-public class RouteplanActivity extends AppCompatActivity implements View.OnClickListener, OnGetRoutePlanResultListener, OnGetCurrentLalngListener, OnGetPoiSearchResultListener, ViewPager.OnPageChangeListener {
+public class RouteplanActivity extends AppCompatActivity implements View.OnClickListener, OnGetRoutePlanResultListener, OnGetCurrentLalngListener, OnGetPoiSearchResultListener, ViewPager.OnPageChangeListener, AdapterView.OnItemClickListener {
     private final String TAG = "crazyK";
     //路况按钮
     private TextView tv_lukuang;
     private ImageView iv_find;
     private View v_popupwindow;
     private int count_lukuang = 0;
+    //返回按钮
+    private LinearLayout ll_back;
     //MapView
     private MapView mapView;
     private BaiduMap baiduMap;
@@ -148,6 +158,12 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
     ProgressDialog progressDialog;
     //由上个way界面传过来的终点Str 通过PlanNode.withCityNameAndPlaceName(bdLocation.getCity(),this.enNodeStr)转化为的终点地址
     private PlanNode enNode;
+    //公交搜索后的信息listview相关
+    private LinearLayout ll_lv_bus;
+    private ListView lv_bus;
+    //
+    private int isItemClick = -1;
+
 
 
     @Override
@@ -173,6 +189,7 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
 
 
     }
+
 
 
     //四种出行返回结果 onGetTransitRouteResult为公交
@@ -228,6 +245,7 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
                 }
 
                 Button btn_startDaoHang = new Button(this);
+                //蛟神黑科技：将图片变为id资源
                 btn_startDaoHang.setBackground(getResources().getDrawable(R.mipmap.routeplan_daohang));
                 btn_startDaoHang.setId(R.id.button_bin_navi);
                 btn_startDaoHang.setOnClickListener(this);
@@ -287,16 +305,139 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
         baiduMap.clear();
         ll_routePlanContent.removeAllViews();
         ll_startDaoHang.removeAllViews();
-        Log.i(TAG, "transitRouteResult: " +transitRouteResult.toString());
-//        Log.i(TAG, "getStarting().getTitle(): " +transitRouteResult.getRouteLines().get(0).getStarting().getTitle());//神马都没有
-//        Log.i(TAG, "getVehicleInfo().getTitle(): " +transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getVehicleInfo().getTitle()+"" );  //空
-//        Log.i(TAG, "getVehicleInfo().getPassStationNum(): " +transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getVehicleInfo().getPassStationNum()+"");//空
-//        Log.i(TAG, "getVehicleInfo().getTotalPrice(): " +transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getVehicleInfo().getTotalPrice()+"");//空
-//        Log.i(TAG, "getVehicleInfo().getZonePrice(): " +transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getVehicleInfo().getZonePrice()+"");//空
-        Log.i(TAG, "getTitle(): " +transitRouteResult.getRouteLines().get(0).getTitle()+"");//神马都没有
-        Log.i(TAG, "getStarting().getTitle(): " +transitRouteResult.getRouteLines().get(0).getStarting().getTitle()+"");
-        Log.i(TAG, "getInstructions(): " +transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getInstructions()+"");
-        Log.i(TAG, "getStepType: "+transitRouteResult.getRouteLines().get(0).getAllStep().get(1).getStepType().name()+"");
+
+        if (transitRouteResult == null || transitRouteResult.error != SearchResult.ERRORNO.NO_ERROR||transitRouteResult.error == SearchResult.ERRORNO.AMBIGUOUS_ROURE_ADDR) {
+            Toast.makeText(RouteplanActivity.this, "位置坐标不明确，请重新选择位置", Toast.LENGTH_LONG).show();
+            if(mPoiSearch == null){
+                // 初始化搜索模块，注册搜索事件监听
+                mPoiSearch = PoiSearch.newInstance();
+                mPoiSearch.setOnGetPoiSearchResultListener(this);
+                mPoiSearch.searchInCity(new PoiCitySearchOption().city(currentCity).keyword(enNodeStr).pageNum(0));
+            }else {
+                mPoiSearch.searchInCity(new PoiCitySearchOption().city(currentCity).keyword(enNodeStr).pageNum(0));
+            }
+        }
+
+        if (transitRouteResult.error == SearchResult.ERRORNO.NO_ERROR) {
+            if (transitRouteResult.getRouteLines().size() > 1) {
+                if(ll_lv_bus.getVisibility() == View.GONE ){
+                    ll_lv_bus.setVisibility(View.VISIBLE);
+                }
+
+                this.nowResult = transitRouteResult;
+                /**
+                 * 步行906米,到达锦江宾馆站
+                 乘坐地铁1号线(升仙湖方向),经过1站,到达天府广场站
+
+                 步行351米,到达南大街站
+                 乘坐334路,经过2站,到达东御街站
+                 步行228米,到达终点站
+
+                 步行350米,到达南大街站
+                 乘坐26路,经过1站,到达人民南路一段站
+                 步行350米,到达终点站
+
+                 步行465米,到达文翁路南站
+                 乘坐57路(或109路),经过2站,到达东城根南街站
+                 步行917米,到达终点站
+
+                 步行857米,到达锦江宾馆站
+                 乘坐16路,经过2站,到达天府广场东站
+                 步行53米,到达终点站
+                 * */
+                ArrayList<String> busInfos = new ArrayList<>();
+
+                for(int x = 0 ; x < transitRouteResult.getRouteLines().size() ; x++){
+                    StringBuffer stringBuffer = new StringBuffer();
+                    for(int y = 0 ; y < transitRouteResult.getRouteLines().get(x).getAllStep().size(); y++){
+                        String step = transitRouteResult.getRouteLines().get(x).getAllStep().get(y).getInstructions()+";";
+                            stringBuffer.append(step);
+//                        Log.i(TAG, "getInstructions(): " +transitRouteResult.getRouteLines().get(x).getAllStep().get(y).getInstructions()+"");
+                    }
+                        busInfos.add(stringBuffer.toString());
+                }
+
+                final RoutePlan_Bus_Adapter routePlan_bus_adapter = new RoutePlan_Bus_Adapter(busInfos,this);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        lv_bus.setAdapter(routePlan_bus_adapter);
+                        lv_bus.setOnItemClickListener(RouteplanActivity.this);
+                    }
+                });
+
+
+//                ll_routePlanContent.setWeightSum(drivingRouteResult.getRouteLines().size());
+//                DrivingRouteOverlay overlay = new DrivingRouteOverlay(baiduMap);
+//                routeOverlay = overlay;
+//                baiduMap.setOnMarkerClickListener(overlay);
+//                overlay.setData(drivingRouteResult.getRouteLines().get(0));
+//                overlay.addToMap();
+//                overlay.zoomToSpan();
+
+//                for (int i = 0; i < drivingRouteResult.getRouteLines().size(); i++) {
+//                    routeLine = drivingRouteResult.getRouteLines().get(i);
+
+//                    //动态添加路线推荐layout
+//                    driverRouteLinePlan = new DriverRouteLinePlan(this);
+//                    driverRouteLinePlan.setPadding(0,7,0,7);
+//                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,1);
+//                    driverRouteLinePlan.setLayoutParams(layoutParams);
+//                    driverRouteLinePlan.setBackgroundColor(Color.WHITE);
+//                    driverRouteLinePlan.setId(i);
+//                    driverRouteLinePlan.setOnClickListener(this);
+//                    driverRouteLinePlan.setDistance(routeLine.getDistance());
+//                    driverRouteLinePlan.setType("方案"+(i+1));
+//                    driverRouteLinePlan.setTime(routeLine.getDuration());
+//                    ll_routePlanContent.addView(driverRouteLinePlan);
+//                }
+
+//                Button btn_startDaoHang = new Button(this);
+//                btn_startDaoHang.setBackground(getResources().getDrawable(R.mipmap.routeplan_daohang));
+//                btn_startDaoHang.setId(R.id.button_bin_navi);
+//                btn_startDaoHang.setOnClickListener(this);
+//                ll_startDaoHang.setPadding(10,10,10,10);
+//                ll_startDaoHang.addView(btn_startDaoHang);
+
+
+
+            } else if ( transitRouteResult.getRouteLines().size() == 1 ) {
+//                Log.i(TAG, "线路等于1");
+//                routeLine = drivingRouteResult.getRouteLines().get(0);
+//
+//                DrivingRouteOverlay overlay = new DrivingRouteOverlay(baiduMap);
+//                routeOverlay = overlay;
+//                baiduMap.setOnMarkerClickListener(overlay);
+//                overlay.setData(drivingRouteResult.getRouteLines().get(0));
+//                overlay.addToMap();
+//                overlay.zoomToSpan();
+//
+//                Button btn_startDaoHang = new Button(this);
+//                btn_startDaoHang.setBackground(getResources().getDrawable(R.mipmap.routeplan_daohang));
+//                btn_startDaoHang.setId(R.id.button_bin_navi);
+//                btn_startDaoHang.setOnClickListener(this);
+//                ll_startDaoHang.setPadding(10,10,10,10);
+//                ll_startDaoHang.addView(btn_startDaoHang);
+            }
+
+        }
+//        Log.i(TAG, "transitRouteResult: " +transitRouteResult.toString());
+////        Log.i(TAG, "getStarting().getTitle(): " +transitRouteResult.getRouteLines().get(0).getStarting().getTitle());//神马都没有
+////        Log.i(TAG, "getVehicleInfo().getTitle(): " +transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getVehicleInfo().getTitle()+"" );  //空
+////        Log.i(TAG, "getVehicleInfo().getPassStationNum(): " +transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getVehicleInfo().getPassStationNum()+"");//空
+////        Log.i(TAG, "getVehicleInfo().getTotalPrice(): " +transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getVehicleInfo().getTotalPrice()+"");//空
+////        Log.i(TAG, "getVehicleInfo().getZonePrice(): " +transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getVehicleInfo().getZonePrice()+"");//空
+//        Log.i(TAG, "getTitle(): " +transitRouteResult.getRouteLines().get(0).getTitle()+"");//null
+//        Log.i(TAG, "getStarting().getTitle(): " +transitRouteResult.getRouteLines().get(0).getStarting().getTitle()+"");//神马都没有
+//        for(int x = 0 ; x < transitRouteResult.getRouteLines().size() ; x++){
+//            for(int y = 0 ; y < transitRouteResult.getRouteLines().get(x).getAllStep().size(); y++){
+//                Log.i(TAG, "getInstructions(): " +transitRouteResult.getRouteLines().get(x).getAllStep().get(y).getInstructions()+"");
+//            }
+//        }
+//        Log.i(TAG, "getStepType: "+transitRouteResult.getRouteLines().get(0).getAllStep().get(1).getStepType().name()+"");
+
+
+
 
 
     }
@@ -322,10 +463,6 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
         if (drivingRouteResult.error == SearchResult.ERRORNO.NO_ERROR) {
             if (drivingRouteResult.getRouteLines().size() > 1) {
                 this.nowResult = drivingRouteResult;
-//                Log.i(TAG, "路线个数："+drivingRouteResult.getRouteLines().size());
-//
-//                ll_routePlanContent.removeAllViews();
-//                ll_startDaoHang.removeAllViews();
 
                 ll_routePlanContent.setWeightSum(drivingRouteResult.getRouteLines().size());
                 DrivingRouteOverlay overlay = new DrivingRouteOverlay(baiduMap);
@@ -413,6 +550,11 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
         rl_vp = (RelativeLayout) findViewById(R.id.id_routeplan_rl_vp);
         vp_addressInfo = (ViewPager) findViewById(R.id.id_routeplan_viewpager_addressinfo);
         iv_daohang = (ImageView) findViewById(R.id.id_routeplan_popupwindow_marker_iv_daohang);
+
+        ll_back = (LinearLayout) findViewById(R.id.id_routeplan_back);
+
+        ll_lv_bus = (LinearLayout) findViewById(R.id.id_routeplan_ll_lv_bussearch);
+        lv_bus = (ListView) findViewById(R.id.id_routeplan_lv);
     }
 
     public void initPopWindow() {
@@ -445,6 +587,8 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
         iv_daohang.setOnClickListener(this);
 
         vp_addressInfo.setOnPageChangeListener(this);
+
+        ll_back.setOnClickListener(this);
     }
 
     //回到中心位置
@@ -627,6 +771,58 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
 
     }
 
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(keyCode == KeyEvent.KEYCODE_BACK){
+            if(isItemClick == 0){
+                moveTaskToBack(false);
+                if(ll_lv_bus.getVisibility() == View.GONE){
+                    ll_lv_bus.setVisibility(View.VISIBLE);
+                    isItemClick = 1 ;
+                    return true;
+                }
+            }
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if(keyCode == KeyEvent.KEYCODE_BACK){
+            if(isItemClick == 0){
+                moveTaskToBack(false);
+                if(ll_lv_bus.getVisibility() == View.GONE){
+                    ll_lv_bus.setVisibility(View.VISIBLE);
+                    isItemClick = 1 ;
+                    return true;
+                }
+            }
+        }
+        return super.onKeyUp(keyCode, event);
+    }
+
+    //公交信息查询后的listview的点击监听
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        baiduMap.clear();
+        if(iv_bus.isSelected()){
+            TransitRouteResult transitRouteResult = (TransitRouteResult) this.nowResult;
+
+            if(ll_lv_bus.getVisibility() == View.VISIBLE){
+                ll_lv_bus.setVisibility(View.GONE);
+                isItemClick = 0;
+            }
+
+            TransitRouteOverlay overlay = new TransitRouteOverlay(baiduMap);
+            baiduMap.setOnMarkerClickListener(overlay);
+            routeOverlay = overlay;
+            overlay.setData(transitRouteResult.getRouteLines().get(position));
+            overlay.addToMap();
+            overlay.zoomToSpan();
+
+        }
+    }
+
 
     private class MyLocationListener implements BDLocationListener {
         private Handler_Route_CurrentLatLng handler_Route_CurrentLatLng;
@@ -732,13 +928,6 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
                     overlay0.zoomToSpan();
                 }
 
-//                DrivingRouteOverlay overlay0 = new DrivingRouteOverlay(baiduMap);
-//                routeOverlay = overlay0;
-//                baiduMap.setOnMarkerClickListener(overlay0);
-//                overlay0.setData(this.nowResult.getRouteLines().get(0));
-//                baiduMap.clear();
-//                overlay0.addToMap();
-//                overlay0.zoomToSpan();
                 break;
             //路线计划2
             case 1:
@@ -762,13 +951,7 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
                     overlay0.addToMap();
                     overlay0.zoomToSpan();
                 }
-//                DrivingRouteOverlay overlay1 = new DrivingRouteOverlay(baiduMap);
-//                routeOverlay = overlay1;
-//                baiduMap.setOnMarkerClickListener(overlay1);
-//                overlay1.setData(this.nowResult.getRouteLines().get(1));
-//                baiduMap.clear();
-//                overlay1.addToMap();
-//                overlay1.zoomToSpan();
+
                 break;
             //路线计划3
             case 2:
@@ -792,13 +975,7 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
                     overlay0.addToMap();
                     overlay0.zoomToSpan();
                 }
-//                DrivingRouteOverlay overlay2 = new DrivingRouteOverlay(baiduMap);
-//                routeOverlay = overlay2;
-//                baiduMap.setOnMarkerClickListener(overlay2);
-//                overlay2.setData(this.nowResult.getRouteLines().get(2));
-//                baiduMap.clear();
-//                overlay2.addToMap();
-//                overlay2.zoomToSpan();
+
                 break;
             //poi搜索后导航按钮被点击
             case R.id.id_routeplan_popupwindow_marker_iv_daohang:
@@ -821,6 +998,12 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
                 break;
             //iv_car驾车图标被点击
             case R.id.id_routeplan_way_car:
+                if(ll_lv_bus.getVisibility() == View.VISIBLE){
+                    ll_lv_bus.setVisibility(View.GONE);
+                }
+                if(rl_vp.getVisibility() == View.VISIBLE){
+                    rl_vp.setVisibility(View.GONE);
+                }
                 if(iv_car.isSelected()){
                     return;
                 }else {
@@ -844,6 +1027,9 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
                 break;
             //iv_bus公交图标被点击：
             case R.id.id_routeplan_way_bus:
+                if(rl_vp.getVisibility() == View.VISIBLE){
+                    rl_vp.setVisibility(View.GONE);
+                }
                 if(iv_bus.isSelected()){
                     return;
                 }else {
@@ -867,6 +1053,12 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
                 break;
             //iv_walk步行图标被点击：
             case R.id.id_routeplan_way_walk:
+                if(ll_lv_bus.getVisibility() == View.VISIBLE){
+                    ll_lv_bus.setVisibility(View.GONE);
+                }
+                if(rl_vp.getVisibility() == View.VISIBLE){
+                    rl_vp.setVisibility(View.GONE);
+                }
                 if(iv_walk.isSelected()){
                     return;
                 }else {
@@ -888,6 +1080,11 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
                     }
                 }
                 break;
+            //返回按钮
+            case R.id.id_routeplan_back:
+
+                this.finish();
+                break;
         }
     }
 
@@ -902,6 +1099,17 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
         @Override
         public boolean onPoiClick(int index) {
             super.onPoiClick(index);
+
+            //判断点击poi图片后圆形导航按钮的样子
+            if(iv_car.isSelected()){
+                iv_daohang.setImageResource(R.mipmap.popupwindow_car_daohang);
+            }else if(iv_bus.isSelected()){
+                iv_daohang.setImageResource(R.mipmap.popupwindow_daohang);
+            }else if(iv_walk.isSelected()){
+                iv_daohang.setImageResource(R.mipmap.popupwindow_walk_daohang);
+            }
+
+
             poiInfo_FromMarkerAndVp = getPoiResult().getAllPoi().get(index);
             //获得终点坐标，导航用
             endLatLng = poiInfo_FromMarkerAndVp.location;

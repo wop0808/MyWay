@@ -1,6 +1,7 @@
 package com.hkc.mymapy;
 
 import android.app.Application;
+import android.os.Handler;
 
 import com.baidu.mapapi.SDKInitializer;
 
