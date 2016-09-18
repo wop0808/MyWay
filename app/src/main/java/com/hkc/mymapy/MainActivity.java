@@ -42,6 +42,8 @@ import com.hkc.listener.MyOritationListener;
 import com.hkc.overlay.PoiOverlay;
 import com.hkc.utitls.ScreenUtils;
 
+import java.util.List;
+
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, ViewPager.OnPageChangeListener {
     private final String TAG = "crazyK";
@@ -97,6 +99,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private PoiResult poiResult;
     //点击搜索结果marker 以及 滑动viewpager时获得的poiInfo
     private PoiInfo poiInfo_FromMarkerAndVp;
+
+    private ProgressDialog progressDialog;
 
 
     @Override
@@ -232,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //开启定位
     public void startLocation() {
 
-        dialog = ProgressDialog.show(this,null,"加载中...");
+        dialog = ProgressDialog.show(this, null, "加载中...");
 
         locationMode = MyLocationConfiguration.LocationMode.NORMAL;
         locationClient = new LocationClient(this);
@@ -388,7 +392,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 isFirstIn = false;
             }
 
-            if(dialog!=null){
+            if (dialog != null) {
                 dialog.dismiss();
             }
 
@@ -403,24 +407,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             rl_vp.setVisibility(View.GONE);
         }
         if (requestCode == 1 && resultCode == 1) {
-            ProgressDialog progressDialog = ProgressDialog.show(this,null,"数据加载中");
+
+            progressDialog = ProgressDialog.show(this, null, "数据加载中");
+
+            if (poiResult != null) {
+                List<PoiInfo> allPoi = poiResult.getAllPoi();
+                if (allPoi != null) {
+                    allPoi.clear();
+                }
+            }
+
             poiResult = data.getParcelableExtra("poiResult");
 //            Log.i(TAG, poiResult.toString());
+
+
+            //蛟神黑科技 将activityi获得的数据-->adapter -->fragment
+            //避免了控件在onCreateView方法还未执行完时，对控件进行操作，爆出空指针异常
+//            if (vp_AddressInfo.getAdapter() == null) {
+                vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(fragmentManager,progressDialog);
+//                vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
+//            } else {
+                vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
+//            }
+            vp_addressInfo_adapter.setPoiResult(poiResult);
+
             baiduMap.clear();
             PoiOverlay overlay_FromSearch = new MyPoiOverlay(baiduMap);
             baiduMap.setOnMarkerClickListener(overlay_FromSearch);
             overlay_FromSearch.setData(poiResult);
             overlay_FromSearch.addToMap();
             overlay_FromSearch.zoomToSpan();
-
-            //蛟神黑科技 将activityi获得的数据-->adapter -->fragment
-            //避免了控件在onCreateView方法还未执行完时，对控件进行操作，爆出空指针异常
-            if (vp_AddressInfo.getAdapter() == null) {
-                vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(fragmentManager);
-                vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
-            }
-            vp_addressInfo_adapter.setPoiResult(poiResult);
-            progressDialog.dismiss();
+//            progressDialog.dismiss();
 //            Toast.makeText(this,"新搜索",Toast.LENGTH_SHORT).show();
 
 
@@ -442,6 +459,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (requestCode == 2 && resultCode == 2) {
 //            PoiResult poiResult = (PoiResult) data.getSerializableExtra("poiResult");
 
+            progressDialog = ProgressDialog.show(this, null, "数据加载中");
             poiResult = data.getParcelableExtra("poiResult");
 
 //            Log.i(TAG, poiResult.toString());
@@ -454,10 +472,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             //蛟神黑科技 将activityi获得的数据-->adapter -->fragment
             //避免了控件在onCreateView方法还未执行完时，对控件进行操作，爆出空指针异常
-            if (vp_AddressInfo.getAdapter() == null) {
-                vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(fragmentManager);
+//            if (vp_AddressInfo.getAdapter() == null) {
+                vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(fragmentManager,progressDialog);
+//                vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
+//            } else {
                 vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
-            }
+//            }
             vp_addressInfo_adapter.setPoiResult(poiResult);
 
             /**
@@ -490,7 +510,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public boolean onPoiClick(int index) {
             super.onPoiClick(index);
+
             poiInfo_FromMarkerAndVp = getPoiResult().getAllPoi().get(index);
+
             mPoiSearch = PoiSearch.newInstance();
             centerToMyLocation(poiInfo_FromMarkerAndVp.location);
 
@@ -499,11 +521,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             vp_AddressInfo.setCurrentItem(index, true);
 
+            vp_addressInfo_adapter.notifyDataSetChanged();
+
             mPoiSearch.searchPoiDetail((new PoiDetailSearchOption())
                     .poiUid(poiInfo_FromMarkerAndVp.uid));
             // }
             return true;
         }
+    }
+
+    public ProgressDialog getProgressDialog(){
+        return this.progressDialog;
     }
 
 }

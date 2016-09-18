@@ -1,8 +1,10 @@
 package com.hkc.adapter;
 
+import android.app.ProgressDialog;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.util.Log;
 
 import com.baidu.mapapi.search.core.PoiInfo;
 import com.baidu.mapapi.search.poi.PoiResult;
@@ -15,26 +17,35 @@ import java.util.List;
  * Created by Administrator on 2016/8/10.
  */
 public class Vp_AddressInfo_Adapter extends FragmentPagerAdapter {
-    public List<Fragment> fragmentList = new ArrayList<>();
+    private String TAG = "crazyK";
+    public List<Fragment> fragmentList ;
+    private FragmentManager fm;
+    private ProgressDialog progressDialog;
 
-    public Vp_AddressInfo_Adapter(FragmentManager fm) {
+    public Vp_AddressInfo_Adapter(FragmentManager fm,ProgressDialog progressDialog) {
         super(fm);
-        for (int i = 0; i < 10; i++) {
-            Fragment_popup1 fragment_popup1 = new Fragment_popup1();
-            fragmentList.add(fragment_popup1);
-        }
+        this.fm = fm;
+        this.progressDialog = progressDialog;
+        fragmentList = new ArrayList<>();
     }
 
 
     public void setPoiResult(PoiResult poiResult) {
+//        Log.i(TAG, "size: "+poiResult.getAllPoi().size());
         List<PoiInfo> allPoi = poiResult.getAllPoi();
-        for (int i = 0; i < 10; i++) {
-            Fragment f = fragmentList.get(i);
-            if (f instanceof Fragment_popup1) {
-                Fragment_popup1 fp1 = (Fragment_popup1) f;
-                fp1.setPoiInfo(allPoi.get(i));
-            }
+        fragmentList.clear();
+
+        for (int i = 0; i < poiResult.getAllPoi().size(); i++) {
+//            Log.e(TAG, len + "::::::::::::::::::");
+            Fragment_popup1 fragment_popup1 = new Fragment_popup1();
+            fragment_popup1.setPoiInfo(allPoi.get(i));
+            fragmentList.add(fragment_popup1);
         }
+
+        notifyDataSetChanged();
+
+        progressDialog.dismiss();
+
     }
 
 

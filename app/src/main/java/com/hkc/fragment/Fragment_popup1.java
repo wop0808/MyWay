@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.baidu.mapapi.search.core.PoiInfo;
 import com.baidu.mapapi.search.poi.PoiResult;
+import com.hkc.mymapy.MainActivity;
 import com.hkc.mymapy.R;
 
 /**
@@ -33,8 +34,17 @@ public class Fragment_popup1 extends Fragment {
         return view_popup_frag1;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+//        if (poiInfo != null) {
+//            setInfo(poiInfo);
+//        }
+    }
+
     public void setPoiInfo(PoiInfo poiInfo) {
         this.poiInfo = poiInfo;
+
     }
 
     public void setInfo(PoiInfo poiInfo) {
