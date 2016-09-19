@@ -10,4 +10,5 @@
     <dimen name="main_margin_left_right">10dp</dimen>
 
     <dimen name="main_margin_top">19dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
 </resources>

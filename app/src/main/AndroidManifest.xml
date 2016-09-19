@@ -57,7 +57,7 @@
             android:enabled="true"
             android:process=":remote" />
 
-        <activity android:name=".RouteplanActivity"></activity>
+        <activity android:name=".RouteplanActivity" />
     </application>
 
 </manifest>

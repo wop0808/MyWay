@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">MyWay</string>
     <!--//蛟神黑科技：在strings.xml中设置id-->
-   <!-- <id name="button_bin_navi"/>-->
-    <item name="button_bin_navi" type="id"/>
+    <!-- <id name="button_bin_navi"/>-->
+    <item name="button_bin_navi" type="id" />
+    <string name="title_activity_base">BaseActivity</string>
 </resources>
