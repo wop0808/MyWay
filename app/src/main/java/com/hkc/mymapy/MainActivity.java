@@ -10,6 +10,7 @@ import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -39,9 +40,13 @@ import com.baidu.mapapi.search.poi.PoiDetailSearchOption;
 import com.baidu.mapapi.search.poi.PoiResult;
 import com.baidu.mapapi.search.poi.PoiSearch;
 import com.hkc.adapter.Vp_AddressInfo_Adapter;
+import com.hkc.fragment.Fragment_popup1;
 import com.hkc.listener.MyOritationListener;
 import com.hkc.overlay.PoiOverlay;
 import com.hkc.utitls.ScreenUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, ViewPager.OnPageChangeListener {
@@ -109,6 +114,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         //初始化view //初始化changeMap ,PopupWindow
         initView();
+//        vp_AddressInfo.setOffscreenPageLimit(0);
         //初始化地图标尺
         initMetre();
         //设置监听
@@ -165,6 +171,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onPause();
         //在activity执行onPause时执行mMapView. onPause ()，实现地图生命周期管理
         mapView.onPause();
+        vp_AddressInfo.destroyDrawingCache();
     }
 
 
@@ -233,7 +240,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //开启定位
     public void startLocation() {
 
-        dialog = ProgressDialog.show(this,null,"加载中...");
+        dialog = ProgressDialog.show(this, null, "加载中...");
 
         locationMode = MyLocationConfiguration.LocationMode.NORMAL;
         locationClient = new LocationClient(this);
@@ -389,7 +396,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 isFirstIn = false;
             }
 
-            if(dialog!=null){
+            if (dialog != null) {
                 dialog.dismiss();
             }
 
@@ -401,11 +408,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (rl_vp.getVisibility() == View.VISIBLE) {
+            vp_AddressInfo.removeAllViews();
             rl_vp.setVisibility(View.GONE);
         }
         if (requestCode == 1 && resultCode == 1) {
-            ProgressDialog progressDialog = ProgressDialog.show(this,null,"数据加载中");
+
+//            vp_AddressInfo.removeAllViews();
+
+            ProgressDialog progressDialog = ProgressDialog.show(this, null, "数据加载中");
             poiResult = data.getParcelableExtra("poiResult");
+
+            List<PoiInfo> allPoi = poiResult.getAllPoi();
+            List<Fragment_popup1> fragmentList = new ArrayList<>();
+            for (int i = 0; i < allPoi.size(); i++) {
+                Fragment_popup1 fragment_popup1 = new Fragment_popup1();
+                fragment_popup1.setPoiInfo(poiResult.getAllPoi().get(i));
+                fragmentList.add(fragment_popup1);
+            }
+
+
+            //蛟神黑科技 将activityi获得的数据-->adapter -->fragment
+            //避免了控件在onCreateView方法还未执行完时，对控件进行操作，爆出空指针异常
+            if (vp_AddressInfo.getAdapter() == null) {
+                vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(fragmentManager);
+
+                vp_addressInfo_adapter.setList(fragmentList);
+
+                vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
+            } else {
+                vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
+            }
+//            vp_addressInfo_adapter.setPoiResult(poiResult);
+//            Log.i(TAG, "vp_addressInfo_adapter.setPoiResult(poiResult) ");
+
 //            Log.i(TAG, poiResult.toString());
             baiduMap.clear();
             PoiOverlay overlay_FromSearch = new MyPoiOverlay(baiduMap);
@@ -413,17 +448,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             overlay_FromSearch.setData(poiResult);
             overlay_FromSearch.addToMap();
             overlay_FromSearch.zoomToSpan();
+            Log.i(TAG, "地图显示完毕");
 
-            //蛟神黑科技 将activityi获得的数据-->adapter -->fragment
-            //避免了控件在onCreateView方法还未执行完时，对控件进行操作，爆出空指针异常
-//            if (vp_AddressInfo.getAdapter() == null) {
-                vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(fragmentManager);
-                vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
-//            }else {
-//                vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
-//            }
 
-            vp_addressInfo_adapter.setPoiResult(poiResult);
             progressDialog.dismiss();
 //            Toast.makeText(this,"新搜索",Toast.LENGTH_SHORT).show();
 
@@ -448,6 +475,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             poiResult = data.getParcelableExtra("poiResult");
 
+            //蛟神黑科技 将activityi获得的数据-->adapter -->fragment
+            //避免了控件在onCreateView方法还未执行完时，对控件进行操作，爆出空指针异常
+            if (vp_AddressInfo.getAdapter() == null) {
+                vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(fragmentManager);
+                vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
+            } else {
+                vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
+            }
+//            vp_addressInfo_adapter.setPoiResult(poiResult);
+//            Log.i(TAG, "vp_addressInfo_adapter.setPoiResult(poiResult) ");
+
 //            Log.i(TAG, poiResult.toString());
             baiduMap.clear();
             PoiOverlay overlay_FromNear = new MyPoiOverlay(baiduMap);
@@ -456,16 +494,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             overlay_FromNear.addToMap();
             overlay_FromNear.zoomToSpan();
 
-            //蛟神黑科技 将activityi获得的数据-->adapter -->fragment
-            //避免了控件在onCreateView方法还未执行完时，对控件进行操作，爆出空指针异常
-//            if (vp_AddressInfo.getAdapter() == null) {
-                vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(fragmentManager);
-                vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
-//            }else {
-//                vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
-//            }
-            vp_addressInfo_adapter.setPoiResult(poiResult);
-            Log.i(TAG, "vp_addressInfo_adapter.setPoiResult(poiResult) ");
 
             /**
              * 逻辑还需完善 使其能自动搜索
@@ -497,7 +525,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public boolean onPoiClick(int index) {
             super.onPoiClick(index);
+//            vp_AddressInfo.removeAllViews();
+
             poiInfo_FromMarkerAndVp = getPoiResult().getAllPoi().get(index);
+
             mPoiSearch = PoiSearch.newInstance();
             centerToMyLocation(poiInfo_FromMarkerAndVp.location);
 
@@ -512,6 +543,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return true;
         }
     }
+
+
 
 }
 

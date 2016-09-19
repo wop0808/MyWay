@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class Vp_AddressInfo_Adapter extends FragmentPagerAdapter {
     private String TAG = "crazyK";
-    public List<Fragment> fragmentList = new ArrayList<>();
+    public List<Fragment_popup1> fragmentList ;
 
     public Vp_AddressInfo_Adapter(FragmentManager fm) {
         super(fm);
@@ -27,32 +27,40 @@ public class Vp_AddressInfo_Adapter extends FragmentPagerAdapter {
 //        }
     }
 
-
-    public void setPoiResult(PoiResult poiResult) {
-        List<PoiInfo> allPoi = poiResult.getAllPoi();
-        fragmentList.clear();
-        for (int i = 0; i < allPoi.size(); i++) {
-            Fragment_popup1 fragment_popup1 = new Fragment_popup1();
-            fragmentList.add(fragment_popup1);
-            Fragment f = fragmentList.get(i);
-            if (f instanceof Fragment_popup1) {
-                Fragment_popup1 fp1 = (Fragment_popup1) f;
-                fp1.setPoiInfo(allPoi.get(i));
-                Log.i(TAG, "fp1.setPoiInfo(allPoi.get(i)) ");
-            }
-        }
+    public void setList(List<Fragment_popup1> fragmentList){
+        this.fragmentList = fragmentList;
         notifyDataSetChanged();
-        Log.i(TAG, "notifyDataSetChanged() ");
     }
+
+//    public void setPoiResult(PoiResult poiResult) {
+//        List<PoiInfo> allPoi = poiResult.getAllPoi();
+//        for (int i = 0; i < allPoi.size(); i++) {
+//
+//            Fragment f = fragmentList.get(i);
+//            if (f instanceof Fragment_popup1) {
+//                Fragment_popup1 fp1 = (Fragment_popup1) f;
+//                fp1.setPoiInfo(allPoi.get(i));
+////                Log.i(TAG, "fp1.setPoiInfo(allPoi.get(i)) ");
+//            }
+//        }
+//        notifyDataSetChanged();
+//        Log.i(TAG, "notifyDataSetChanged() ");
+//    }
 
 
     @Override
     public Fragment getItem(int position) {
-        return fragmentList.get(position);
+        if(fragmentList != null){
+            return fragmentList.get(position);
+        }
+        return null;
     }
 
     @Override
     public int getCount() {
-        return fragmentList.size();
+        if(fragmentList != null){
+            return fragmentList.size();
+        }
+        return 0;
     }
 }

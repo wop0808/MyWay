@@ -37,24 +37,35 @@ public class Fragment_popup1 extends Fragment {
     }
 
     @Override
-    public void onStart() {
+    public void onResume() {
+        Log.i(TAG, "onStart: ");
         if (poiInfo != null) {
             setInfo(poiInfo);
-            Log.i(TAG, "setInfo(poiInfo) ");
+            Log.i(TAG, "数据设置完毕 ");
         }else {
             Log.i(TAG, "poiInfo为空: ");
         }
-        super.onStart();
+        super.onResume();
     }
+
+//    @Override
+//    public void onStop() {
+//        super.onDestroy();
+//    }
 
     public void setPoiInfo(PoiInfo poiInfo) {
         this.poiInfo = poiInfo;
+//        setInfo(poiInfo);
     }
 
     public void setInfo(PoiInfo poiInfo) {
         tv_addressinfo.setText(poiInfo.address+"");
+        Log.i(TAG, poiInfo.address+"---"+poiInfo.name+"");
 //        tv_destince.setText(poiResult.getAllPoi().get(position).);
         // TODO: 2016/8/29 距离数据没找到
         tv_location.setText(poiInfo.name+"");
     }
+
+
+
 }

@@ -670,7 +670,7 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
             vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(fragmentManager);
             vp_addressInfo.setAdapter(vp_addressInfo_adapter);
         }
-        vp_addressInfo_adapter.setPoiResult(poiResult);
+//        vp_addressInfo_adapter.setPoiResult(poiResult);
     }
 
     @Override

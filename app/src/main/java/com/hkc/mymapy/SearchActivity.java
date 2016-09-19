@@ -131,6 +131,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                 if(search_content != null){
                     mPoiSearch.searchInCity((new PoiCitySearchOption())
                             .city(MainActivity.currentCity).keyword(search_content).pageNum(0));
+                    Log.i(TAG, "search_content: "+search_content);
                 }else {
                     Toast.makeText(this, "地址不能为空", Toast.LENGTH_SHORT).show();
                 }
@@ -172,10 +173,10 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                     .show();
             return;
         } else if (poiResult.error == SearchResult.ERRORNO.NO_ERROR) {
-            Intent intent_SearchToMain = new Intent();
+            Intent intent_SearchToMain = getIntent();
             intent_SearchToMain.putExtra("poiResult", poiResult);
             this.setResult(resultCode_SearchToMain, intent_SearchToMain);
-            Log.i(TAG, "setResult: ");
+//            Log.i(TAG, "setResult: ");
             this.finish();
         }
     }
