@@ -352,7 +352,6 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
                     for(int y = 0 ; y < transitRouteResult.getRouteLines().get(x).getAllStep().size(); y++){
                         String step = transitRouteResult.getRouteLines().get(x).getAllStep().get(y).getInstructions()+";";
                             stringBuffer.append(step);
-//                        Log.i(TAG, "getInstructions(): " +transitRouteResult.getRouteLines().get(x).getAllStep().get(y).getInstructions()+"");
                     }
                         busInfos.add(stringBuffer.toString());
                 }
@@ -366,79 +365,11 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
                     }
                 });
 
-
-//                ll_routePlanContent.setWeightSum(drivingRouteResult.getRouteLines().size());
-//                DrivingRouteOverlay overlay = new DrivingRouteOverlay(baiduMap);
-//                routeOverlay = overlay;
-//                baiduMap.setOnMarkerClickListener(overlay);
-//                overlay.setData(drivingRouteResult.getRouteLines().get(0));
-//                overlay.addToMap();
-//                overlay.zoomToSpan();
-
-//                for (int i = 0; i < drivingRouteResult.getRouteLines().size(); i++) {
-//                    routeLine = drivingRouteResult.getRouteLines().get(i);
-
-//                    //动态添加路线推荐layout
-//                    driverRouteLinePlan = new DriverRouteLinePlan(this);
-//                    driverRouteLinePlan.setPadding(0,7,0,7);
-//                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,1);
-//                    driverRouteLinePlan.setLayoutParams(layoutParams);
-//                    driverRouteLinePlan.setBackgroundColor(Color.WHITE);
-//                    driverRouteLinePlan.setId(i);
-//                    driverRouteLinePlan.setOnClickListener(this);
-//                    driverRouteLinePlan.setDistance(routeLine.getDistance());
-//                    driverRouteLinePlan.setType("方案"+(i+1));
-//                    driverRouteLinePlan.setTime(routeLine.getDuration());
-//                    ll_routePlanContent.addView(driverRouteLinePlan);
-//                }
-
-//                Button btn_startDaoHang = new Button(this);
-//                btn_startDaoHang.setBackground(getResources().getDrawable(R.mipmap.routeplan_daohang));
-//                btn_startDaoHang.setId(R.id.button_bin_navi);
-//                btn_startDaoHang.setOnClickListener(this);
-//                ll_startDaoHang.setPadding(10,10,10,10);
-//                ll_startDaoHang.addView(btn_startDaoHang);
-
-
-
             } else if ( transitRouteResult.getRouteLines().size() == 1 ) {
-//                Log.i(TAG, "线路等于1");
-//                routeLine = drivingRouteResult.getRouteLines().get(0);
-//
-//                DrivingRouteOverlay overlay = new DrivingRouteOverlay(baiduMap);
-//                routeOverlay = overlay;
-//                baiduMap.setOnMarkerClickListener(overlay);
-//                overlay.setData(drivingRouteResult.getRouteLines().get(0));
-//                overlay.addToMap();
-//                overlay.zoomToSpan();
-//
-//                Button btn_startDaoHang = new Button(this);
-//                btn_startDaoHang.setBackground(getResources().getDrawable(R.mipmap.routeplan_daohang));
-//                btn_startDaoHang.setId(R.id.button_bin_navi);
-//                btn_startDaoHang.setOnClickListener(this);
-//                ll_startDaoHang.setPadding(10,10,10,10);
-//                ll_startDaoHang.addView(btn_startDaoHang);
+
             }
 
         }
-//        Log.i(TAG, "transitRouteResult: " +transitRouteResult.toString());
-////        Log.i(TAG, "getStarting().getTitle(): " +transitRouteResult.getRouteLines().get(0).getStarting().getTitle());//神马都没有
-////        Log.i(TAG, "getVehicleInfo().getTitle(): " +transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getVehicleInfo().getTitle()+"" );  //空
-////        Log.i(TAG, "getVehicleInfo().getPassStationNum(): " +transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getVehicleInfo().getPassStationNum()+"");//空
-////        Log.i(TAG, "getVehicleInfo().getTotalPrice(): " +transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getVehicleInfo().getTotalPrice()+"");//空
-////        Log.i(TAG, "getVehicleInfo().getZonePrice(): " +transitRouteResult.getRouteLines().get(0).getAllStep().get(0).getVehicleInfo().getZonePrice()+"");//空
-//        Log.i(TAG, "getTitle(): " +transitRouteResult.getRouteLines().get(0).getTitle()+"");//null
-//        Log.i(TAG, "getStarting().getTitle(): " +transitRouteResult.getRouteLines().get(0).getStarting().getTitle()+"");//神马都没有
-//        for(int x = 0 ; x < transitRouteResult.getRouteLines().size() ; x++){
-//            for(int y = 0 ; y < transitRouteResult.getRouteLines().get(x).getAllStep().size(); y++){
-//                Log.i(TAG, "getInstructions(): " +transitRouteResult.getRouteLines().get(x).getAllStep().get(y).getInstructions()+"");
-//            }
-//        }
-//        Log.i(TAG, "getStepType: "+transitRouteResult.getRouteLines().get(0).getAllStep().get(1).getStepType().name()+"");
-
-
-
-
 
     }
 
@@ -1082,9 +1013,17 @@ public class RouteplanActivity extends AppCompatActivity implements View.OnClick
                 break;
             //返回按钮
             case R.id.id_routeplan_back:
-
-                this.finish();
+                if(this.iv_bus.isSelected() && this.isItemClick == 0 && (((TransitRouteResult)this.nowResult)).getRouteLines().size() > 1){
+                    if(this.ll_lv_bus.getVisibility() == View.GONE){
+                        this.ll_lv_bus.setVisibility(View.VISIBLE);
+                        this.isItemClick = 1;
+                    }
+                }else {
+                    this.finish();
+                }
                 break;
+
+
         }
     }
 

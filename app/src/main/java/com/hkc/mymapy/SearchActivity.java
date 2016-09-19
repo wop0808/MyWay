@@ -45,6 +45,7 @@ import com.hkc.adapter.Search_Adapter;
 import java.util.ArrayList;
 
 public class SearchActivity extends AppCompatActivity implements View.OnClickListener, OnGetSuggestionResultListener, OnGetPoiSearchResultListener {
+    private String TAG = "crazyK";
     private final int resultCode_SearchToMain = 1;
     //可视化控件
     private LinearLayout search ;
@@ -174,13 +175,14 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
             Intent intent_SearchToMain = new Intent();
             intent_SearchToMain.putExtra("poiResult", poiResult);
             this.setResult(resultCode_SearchToMain, intent_SearchToMain);
+            Log.i(TAG, "setResult: ");
             this.finish();
         }
     }
 
     @Override
     public void onGetPoiDetailResult(PoiDetailResult poiDetailResult) {
-
+        Log.i(TAG, "onGetPoiDetailResult: ");
     }
 
     @Override

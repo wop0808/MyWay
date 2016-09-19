@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
@@ -415,10 +416,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             //蛟神黑科技 将activityi获得的数据-->adapter -->fragment
             //避免了控件在onCreateView方法还未执行完时，对控件进行操作，爆出空指针异常
-            if (vp_AddressInfo.getAdapter() == null) {
+//            if (vp_AddressInfo.getAdapter() == null) {
                 vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(fragmentManager);
                 vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
-            }
+//            }else {
+//                vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
+//            }
+
             vp_addressInfo_adapter.setPoiResult(poiResult);
             progressDialog.dismiss();
 //            Toast.makeText(this,"新搜索",Toast.LENGTH_SHORT).show();
@@ -454,11 +458,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             //蛟神黑科技 将activityi获得的数据-->adapter -->fragment
             //避免了控件在onCreateView方法还未执行完时，对控件进行操作，爆出空指针异常
-            if (vp_AddressInfo.getAdapter() == null) {
+//            if (vp_AddressInfo.getAdapter() == null) {
                 vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(fragmentManager);
                 vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
-            }
+//            }else {
+//                vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
+//            }
             vp_addressInfo_adapter.setPoiResult(poiResult);
+            Log.i(TAG, "vp_addressInfo_adapter.setPoiResult(poiResult) ");
 
             /**
              * 逻辑还需完善 使其能自动搜索
