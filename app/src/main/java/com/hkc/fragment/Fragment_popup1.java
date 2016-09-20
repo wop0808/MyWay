@@ -33,6 +33,7 @@ public class Fragment_popup1 extends Fragment {
             setInfo(poiInfo);
         }
         return view_popup_frag1;
+
     }
 
     @Override
