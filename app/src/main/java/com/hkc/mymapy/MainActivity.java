@@ -10,9 +10,12 @@ import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
@@ -42,11 +45,15 @@ import com.hkc.listener.MyOritationListener;
 import com.hkc.overlay.PoiOverlay;
 import com.hkc.utitls.ScreenUtils;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, ViewPager.OnPageChangeListener {
-    private final String TAG = "crazyK";
+    private final String TAG = "MainActivity";
 
     private final int RequestCode_mainToSearch = 1;
     private final int RequestCode_mainToNear = 2;
@@ -88,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private MyLocationConfiguration.LocationMode locationMode;
     int count_search = 0;
     //POI查询相关
-    private PoiSearch mPoiSearch;
+    //private PoiSearch mPoiSearch;
     private int radius_Nearby = 500;
     //视图中隐藏的viewpager 用于选点显示地点信息
     private RelativeLayout rl_vp;
@@ -151,9 +158,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onDestroy();
         //在activity执行onDestroy时执行mMapView.onDestroy()，实现地图生命周期管理
         mapView.onDestroy();
-        if (mPoiSearch != null) {
+       /* if (mPoiSearch != null) {//TODO
             mPoiSearch.destroy();
-        }
+        }*/
     }
 
     @Override
@@ -334,6 +341,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Intent intent_MainToSearch = new Intent(this, SearchActivity.class);
 //                intent_MainToSearch.putExtra("currentCity", currentCity);
                 startActivityForResult(intent_MainToSearch, RequestCode_mainToSearch);
+                rl_vp.setVisibility(View.GONE);
+//                List<Fragment> fragments = getSupportFragmentManager().getFragments();
+//                if (null != fragments) {
+//                    fragments.clear();
+//                }
+
+//                FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+//                fragmentTransaction.disallowAddToBackStack()
+
+//                vp_AddressInfo.removeAllViews();
+//                vp_AddressInfo.destroyDrawingCache();
+//                if (vp_addressInfo_adapter != null)
+//                    vp_addressInfo_adapter.clearFragemnts();
                 break;
             //发现(回归原点 并切换模式)
             case R.id.id_main_main_find:
@@ -403,12 +423,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //code=2 表示从NearActivity中返回的POI搜索结果
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (rl_vp.getVisibility() == View.VISIBLE) {
-            rl_vp.setVisibility(View.GONE);
-        }
+//        if (rl_vp.getVisibility() == View.VISIBLE) {
+//            rl_vp.setVisibility(View.GONE);
+//        }
         if (requestCode == 1 && resultCode == 1) {
 
-            progressDialog = ProgressDialog.show(this, null, "数据加载中");
+            baiduMap.clear();
+
+//            progressDialog = ProgressDialog.show(this, null, "数据加载中");
 
             if (poiResult != null) {
                 List<PoiInfo> allPoi = poiResult.getAllPoi();
@@ -418,22 +440,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             poiResult = data.getParcelableExtra("poiResult");
-//            Log.i(TAG, poiResult.toString());
 
-
-            //蛟神黑科技 将activityi获得的数据-->adapter -->fragment
-            //避免了控件在onCreateView方法还未执行完时，对控件进行操作，爆出空指针异常
-//            if (vp_AddressInfo.getAdapter() == null) {
-                vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(fragmentManager,progressDialog);
-//                vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
-//            } else {
-                vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
-//            }
-            vp_addressInfo_adapter.setPoiResult(poiResult);
-
-            baiduMap.clear();
             PoiOverlay overlay_FromSearch = new MyPoiOverlay(baiduMap);
-            baiduMap.setOnMarkerClickListener(overlay_FromSearch);
+//            baiduMap.setOnMarkerClickListener(overlay_FromSearch);
             overlay_FromSearch.setData(poiResult);
             overlay_FromSearch.addToMap();
             overlay_FromSearch.zoomToSpan();
@@ -456,6 +465,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Toast.makeText(this, strInfo, Toast.LENGTH_LONG)
                         .show();
             }
+//            rl_vp.setVisibility(View.VISIBLE);
+            //蛟神黑科技 将activityi获得的数据-->adapter -->fragment
+            //避免了控件在onCreateView方法还未执行完时，对控件进行操作，爆出空指针异常
+            if (vp_AddressInfo.getAdapter() == null) {
+                vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(fragmentManager);
+                vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
+            } /*else {
+                vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
+            }*/
+            Log.i(TAG, "位子大小：" + poiResult.getAllPoi().get(0).name);
+            vp_addressInfo_adapter.setPoiResult(poiResult);
+            vp_addressInfo_adapter.notifyDataSetChanged();
+
         } else if (requestCode == 2 && resultCode == 2) {
 //            PoiResult poiResult = (PoiResult) data.getSerializableExtra("poiResult");
 
@@ -472,12 +494,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             //蛟神黑科技 将activityi获得的数据-->adapter -->fragment
             //避免了控件在onCreateView方法还未执行完时，对控件进行操作，爆出空指针异常
-//            if (vp_AddressInfo.getAdapter() == null) {
-                vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(fragmentManager,progressDialog);
-//                vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
-//            } else {
+            if (vp_AddressInfo.getAdapter() == null) {
+                vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(fragmentManager/*,progressDialog*/);
                 vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
-//            }
+            } else {
+                vp_AddressInfo.setAdapter(vp_addressInfo_adapter);
+            }
             vp_addressInfo_adapter.setPoiResult(poiResult);
 
             /**
@@ -504,6 +526,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         public MyPoiOverlay(BaiduMap baiduMap) {
             super(baiduMap);
+            baiduMap.setOnMarkerClickListener(this);
         }
 
         //点击查询结果覆盖物的监听
@@ -513,24 +536,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             poiInfo_FromMarkerAndVp = getPoiResult().getAllPoi().get(index);
 
-            mPoiSearch = PoiSearch.newInstance();
+            //  mPoiSearch = PoiSearch.newInstance();
             centerToMyLocation(poiInfo_FromMarkerAndVp.location);
 
             rl_vp.setVisibility(View.VISIBLE);
             mapView.showZoomControls(false);
-
+            vp_addressInfo_adapter.notifyDataSetChanged();
             vp_AddressInfo.setCurrentItem(index, true);
 
-            vp_addressInfo_adapter.notifyDataSetChanged();
-
+/*
             mPoiSearch.searchPoiDetail((new PoiDetailSearchOption())
                     .poiUid(poiInfo_FromMarkerAndVp.uid));
-            // }
+             }*/
             return true;
         }
     }
 
-    public ProgressDialog getProgressDialog(){
+    public ProgressDialog getProgressDialog() {
         return this.progressDialog;
     }
 

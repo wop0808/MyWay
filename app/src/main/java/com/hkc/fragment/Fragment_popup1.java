@@ -3,6 +3,7 @@ package com.hkc.fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,9 @@ import com.hkc.mymapy.R;
  * Created by Administrator on 2016/8/4.
  */
 public class Fragment_popup1 extends Fragment {
+
+    private String TAG = "Fragment_popup1";
+
     private TextView tv_location, tv_destince, tv_addressinfo;
 
     private PoiInfo poiInfo;
@@ -24,7 +28,7 @@ public class Fragment_popup1 extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view_popup_frag1 = inflater.inflate(R.layout.framgment_popupwindow, container, false);
+        View view_popup_frag1 = inflater.inflate(R.layout.framgment_popupwindow, null, false);
         tv_addressinfo = (TextView) view_popup_frag1.findViewById(R.id.id_main_vp_frg_addressinfo);
         tv_location = (TextView) view_popup_frag1.findViewById(R.id.id_main_vp_frg_location);
         tv_destince = (TextView) view_popup_frag1.findViewById(R.id.id_main_vp_frg_destince);
@@ -44,7 +48,7 @@ public class Fragment_popup1 extends Fragment {
 
     public void setPoiInfo(PoiInfo poiInfo) {
         this.poiInfo = poiInfo;
-
+        Log.i(TAG,poiInfo.name);
     }
 
     public void setInfo(PoiInfo poiInfo) {

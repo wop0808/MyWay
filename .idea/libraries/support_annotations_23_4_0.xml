@@ -6,8 +6,6 @@
     <JAVADOC />
     <SOURCES>
       <root url="jar://F:/SDK/sdk/extras/android/m2repository/com/android/support/support-annotations/23.4.0/support-annotations-23.4.0-sources.jar!/" />
-      <root url="jar://F:/AndroidDeveloper/sdk/sdk/extras/android/m2repository/com/android/support/support-annotations/23.4.0/support-annotations-23.4.0-sources.jar!/" />
-      <root url="jar://G:/AndroidDeveloper/sdk/extras/android/m2repository/com/android/support/support-annotations/23.4.0/support-annotations-23.4.0-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

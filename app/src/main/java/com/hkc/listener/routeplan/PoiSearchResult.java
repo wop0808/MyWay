@@ -39,7 +39,7 @@ public class PoiSearchResult implements OnGetPoiSearchResultListener {
         //蛟神黑科技 将activityi获得的数据-->adapter -->fragment
         //避免了控件在onCreateView方法还未执行完时，对控件进行操作，爆出空指针异常
         if (routeplanActivity.vp_addressInfo.getAdapter() == null) {
-            routeplanActivity. vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(routeplanActivity.fragmentManager,progressDialog);
+            routeplanActivity. vp_addressInfo_adapter = new Vp_AddressInfo_Adapter(routeplanActivity.fragmentManager/*,progressDialog*/);
             routeplanActivity.vp_addressInfo.setAdapter(routeplanActivity.vp_addressInfo_adapter);
         }
         routeplanActivity.vp_addressInfo_adapter.setPoiResult(poiResult);
