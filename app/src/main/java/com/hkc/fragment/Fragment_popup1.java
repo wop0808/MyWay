@@ -18,9 +18,6 @@ import com.hkc.mymapy.R;
  * Created by Administrator on 2016/8/4.
  */
 public class Fragment_popup1 extends Fragment {
-
-    private String TAG = "Fragment_popup1";
-
     private TextView tv_location, tv_destince, tv_addressinfo;
 
     private PoiInfo poiInfo;
@@ -48,7 +45,7 @@ public class Fragment_popup1 extends Fragment {
 
     public void setPoiInfo(PoiInfo poiInfo) {
         this.poiInfo = poiInfo;
-        Log.i(TAG,poiInfo.name);
+
     }
 
     public void setInfo(PoiInfo poiInfo) {
