@@ -403,6 +403,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //获取当前城市
             currentCity = bdLocation.getCity();
 
+            if (dialog != null) {
+                dialog.dismiss();
+            }
 
             //首次定位
             if (isFirstIn) {
@@ -412,9 +415,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 isFirstIn = false;
             }
 
-            if (dialog != null) {
-                dialog.dismiss();
-            }
+
 
         }
     }
@@ -481,7 +482,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (requestCode == 2 && resultCode == 2) {
 //            PoiResult poiResult = (PoiResult) data.getSerializableExtra("poiResult");
 
-            progressDialog = ProgressDialog.show(this, null, "数据加载中");
+//            progressDialog = ProgressDialog.show(this, null, "数据加载中");
             poiResult = data.getParcelableExtra("poiResult");
 
 //            Log.i(TAG, poiResult.toString());
@@ -552,9 +553,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    public ProgressDialog getProgressDialog() {
-        return this.progressDialog;
-    }
+
 
 }
 

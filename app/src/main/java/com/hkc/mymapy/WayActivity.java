@@ -50,9 +50,7 @@ public class WayActivity extends AppCompatActivity implements View.OnClickListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_way);
 
-        // 初始化建议搜索模块，注册建议搜索事件监听
-        mSuggestionSearch = SuggestionSearch.newInstance();
-        mSuggestionSearch.setOnGetSuggestionResultListener(this);
+
 
         iv_back = (ImageView) findViewById(R.id.id_main_way_iv_back);
         iv_car = (ImageView) findViewById(R.id.id_main_way_car);
@@ -138,20 +136,6 @@ public class WayActivity extends AppCompatActivity implements View.OnClickListen
 
                 startActivity(intent_WayToRouteplan);
 
-
-
-
-
-//                RoutePlanSearch routePlanSearch = RoutePlanSearch.newInstance();
-//
-//
-//                PlanNode stNode = PlanNode.withCityNameAndPlaceName("北京", "龙泽");
-//                PlanNode enNode = PlanNode.withCityNameAndPlaceName("北京", "西单");
-//
-//                routePlanSearch.transitSearch((new TransitRoutePlanOption())
-//                        .from(stNode)
-//                        .city("北京")
-//                        .to(enNode));
                 break;
             //返回
             case R.id.id_main_way_iv_back:
@@ -220,5 +204,23 @@ public class WayActivity extends AppCompatActivity implements View.OnClickListen
     @Override
     public void afterTextChanged(Editable s) {
 
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if(mSuggestionSearch == null){
+            // 初始化建议搜索模块，注册建议搜索事件监听
+            mSuggestionSearch = SuggestionSearch.newInstance();
+            mSuggestionSearch.setOnGetSuggestionResultListener(this);
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(mSuggestionSearch!=null){
+            mSuggestionSearch.destroy();
+        }
     }
 }

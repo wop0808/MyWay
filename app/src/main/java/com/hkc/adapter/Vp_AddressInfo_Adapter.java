@@ -52,6 +52,7 @@ public class Vp_AddressInfo_Adapter extends FragmentPagerAdapter {
     public void setPoiResult(PoiResult poiResult) {
 //        Log.i("MainActivity", "位子大小2：" + poiResult.getAllPoi().get(0).name);
         this.poiResult = poiResult;
+        notifyDataSetChanged();
 //        Log.i("MainActivity", "位子大小3：" + this.poiResult.getAllPoi().get(0).name);
 //        fragmentList = new Fragment[this.poiResult.getAllPoi().size()];
 //        notifyDataSetChanged();
