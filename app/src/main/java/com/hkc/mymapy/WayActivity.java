@@ -216,11 +216,11 @@ public class WayActivity extends AppCompatActivity implements View.OnClickListen
         }
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if(mSuggestionSearch!=null){
-            mSuggestionSearch.destroy();
-        }
-    }
+//    @Override
+//    protected void onStop() {
+//        super.onStop();
+//        if(mSuggestionSearch!=null){
+//            mSuggestionSearch.destroy();
+//        }
+//    }
 }
